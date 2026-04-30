@@ -1,0 +1,8 @@
+﻿name = "arpage"
+pages_build_output_dir = "web/dist"
+compatibility_date = "2024-09-23"
+
+[[kv_namespaces]]
+binding = "BOOKMARKS"
+id = "554f6be56c6e41958586c7715b9539f0"
+preview_id = "a9f62238a23743ff88de2546ae88c35e"

@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280">
+<title>ArPage — UI Preview · E-Ink</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #111; font-family: sans-serif; }
+
+/* ── outer shell ── */
+.preview-nav {
+  background: #111; padding: 16px 48px;
+  position: sticky; top: 0; z-index: 9999;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid #222;
+}
+.preview-nav-title { font-family: monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #444; }
+.preview-nav-links { display: flex; gap: 28px; }
+.preview-nav-links a { font-family: monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #555; text-decoration: none; }
+.preview-nav-links a:hover { color: #aaa; }
+
+.state-section { padding: 48px 0 56px; background: #1A1A1A; }
+.state-label {
+  text-align: center; font-family: 'Space Mono', monospace;
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: #666666;
+  margin-bottom: 28px; padding: 0 0 18px;
+  border-bottom: 1px solid #222222;
+}
+.screen-wrap { max-width: 1280px; margin: 0 auto; box-shadow: 6px 6px 0 rgba(0,0,0,0.12); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   SHARED OPTION-A DESIGN TOKENS
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+
+/* base page */
+.sa {
+  background-color: #E8E8E5;
+  font-family: 'Lora', Georgia, serif;
+  color: #111111;
+  position: relative;
+  overflow: hidden;
+}
+.sa-grain {
+  position: absolute; inset: 0; pointer-events: none; z-index: 1;
+  background-repeat: repeat; background-size: 256px 256px;
+}
+.sa > *:not(.sa-grain) { position: relative; z-index: 2; }
+
+/* topbar */
+.sa-topbar {
+  border-bottom: 1px solid #BBBBBB; padding: 0 48px; height: 54px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(244,244,242,0.95);
+}
+.sa-logo { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: #111111; }
+.sa-logo em { font-style: normal; color: #111111; }
+.sa-topbar-right { display: flex; align-items: center; gap: 4px; }
+.sa-icon-btn { width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #666666; cursor: pointer; }
+.sa-icon-btn:hover { background: rgba(0,0,0,0.06); }
+.sa-icon-btn svg { width: 16px; height: 16px; }
+
+/* search bar */
+.sa-search-bar { padding: 26px 48px 22px; display: flex; justify-content: center; }
+.sa-search-wrap { position: relative; width: 660px; }
+.sa-search-input {
+  width: 100%; height: 50px; border: 1.5px solid #AAAAAA; border-radius: 8px;
+  background: #F4F4F2; padding: 0 60px 0 50px;
+  font-family: 'Lora', Georgia, serif; font-size: 15px; color: #111111; outline: none;
+  box-shadow: 1px 1px 0 #CCCCCC;
+}
+.sa-search-input::placeholder { color: #999999; }
+.sa-search-input:focus { border-color: #111111; box-shadow: 2px 2px 0 #999999; }
+.sa-search-icon { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); color: #888888; }
+.sa-search-icon svg { width: 18px; height: 18px; display: block; }
+.sa-search-hint { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); display: flex; align-items: center; gap: 4px; }
+.sa-kbd { background: #E2E2E2; border: 1px solid #AAAAAA; border-radius: 4px; padding: 2px 7px; font-family: monospace; font-size: 11px; color: #888888; line-height: 1.4; }
+
+/* content wrapper */
+.sa-content { padding: 4px 48px 48px; }
+
+/* pinned section */
+.sa-pinned { background: #E2E2E2; border: 1px solid #BBBBBB; border-radius: 8px; padding: 18px 22px 20px; margin-bottom: 30px; }
+.sa-pinned-header { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; }
+.sa-pin-label { font-family: 'Playfair Display', Georgia, serif; font-size: 11px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: #111111; }
+.sa-pin-icon svg { width: 12px; height: 12px; display: block; color: #111111; }
+
+/* bookmark grid */
+.bm-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.sa-bm-card {
+  background: #F4F4F2; border: 1px solid #CCCCCC; border-radius: 7px;
+  padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+  min-width: 188px; cursor: pointer; position: relative;
+  transition: border-color 0.12s, box-shadow 0.12s;
+  box-shadow: none;
+}
+.sa-bm-card:hover { border-color: #111111; box-shadow: 2px 2px 0 #AAAAAA; }
+.sa-bm-title { font-size: 13px; font-weight: 500; color: #111111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px; }
+.sa-bm-domain { font-size: 11px; color: #777777; margin-top: 1px; font-style: italic; }
+
+/* card ⋯ button — appears on hover, separated from the click zone */
+.sa-bm-more {
+  width: 24px; height: 24px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  color: #AAAAAA; background: transparent; border: 1px solid transparent;
+  cursor: pointer; flex-shrink: 0; margin-left: 4px;
+  opacity: 0; transition: opacity 0.12s, background 0.1s, border-color 0.1s;
+  font-size: 14px; letter-spacing: 1px; line-height: 1;
+}
+.sa-bm-card:hover .sa-bm-more { opacity: 1; }
+.sa-bm-more:hover { background: #E2E2E2; border-color: #CCCCCC; color: #333333; }
+
+/* dropdown menu from ⋯ */
+.sa-bm-dropdown {
+  position: absolute; right: 0; top: calc(100% + 4px); z-index: 50;
+  background: #F4F4F2; border: 1px solid #CCCCCC; border-radius: 8px;
+  box-shadow: 3px 3px 0 #BBBBBB; min-width: 140px; padding: 4px;
+}
+.sa-bm-dropdown-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 5px; cursor: pointer;
+  font-family: 'Lora', Georgia, serif; font-size: 13px; color: #333333;
+  transition: background 0.1s;
+}
+.sa-bm-dropdown-item:hover { background: #E2E2E2; }
+.sa-bm-dropdown-item.danger { color: #444444; }
+.sa-bm-dropdown-item.danger:hover { background: #EEEEEE; }
+.sa-bm-dropdown-item svg { width: 13px; height: 13px; flex-shrink: 0; color: #777777; }
+.sa-bm-dropdown-item.danger svg { color: #666666; }
+.sa-bm-dropdown-divider { height: 1px; background: #DDDDDD; margin: 4px 8px; }
+
+/* group */
+.sa-group { margin-bottom: 26px; }
+.sa-group-header { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1px solid #BBBBBB; margin-bottom: 14px; cursor: pointer; }
+.sa-group-toggle { color: #777777; width: 14px; flex-shrink: 0; }
+.sa-group-toggle svg { width: 10px; height: 10px; display: block; }
+.sa-group-name { font-family: 'Playfair Display', Georgia, serif; font-size: 15px; font-weight: 600; color: #111111; }
+.sa-group-meta { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+.sa-group-count { font-size: 11px; color: #999999; }
+.sa-group-actions { display: flex; gap: 14px; }
+.sa-group-action { font-size: 11px; color: #AAAAAA; cursor: pointer; }
+.sa-group-action:hover { color: #111111; }
+.sa-group-collapsed .sa-group-header { border-bottom-style: dashed; }
+.sa-group-collapsed .sa-group-name { opacity: 0.5; }
+
+/* add group */
+.sa-add-group { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1.5px dashed #AAAAAA; border-radius: 6px; font-family: 'Lora', Georgia, serif; font-size: 12px; color: #999999; cursor: pointer; margin-top: 4px; }
+.sa-add-group:hover { border-color: #111111; color: #111111; }
+
+/* add bookmark ghost card */
+.sa-bm-add {
+  background: transparent; border: 1.5px dashed #AAAAAA; border-radius: 7px;
+  padding: 10px 14px; display: flex; align-items: center; gap: 8px;
+  min-width: 140px; cursor: pointer;
+  transition: border-color 0.12s, color 0.12s;
+  color: #AAAAAA; font-family: 'Lora', Georgia, serif; font-size: 12px;
+}
+.sa-bm-add:hover { border-color: #111111; color: #111111; }
+.sa-bm-add svg { flex-shrink: 0; }
+
+/* favicon sizes */
+.fav { width: 26px; height: 26px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; flex-shrink: 0; letter-spacing: -0.5px; user-select: none; }
+.fa-gh  { background: #222; color: #E8E8E5; }
+.fa-cl  { background: #333333; color: #F4F4F2; }
+.fa-li  { background: #444444; color: #F4F4F2; }
+.fa-vr  { background: #222; color: #F0F0F0; }
+.fa-cf  { background: #333333; color: #F4F4F2; }
+.fa-npm { background: #555555; color: #F4F4F2; }
+.fa-mdn { background: #444444; color: #F4F4F2; }
+.fa-so  { background: #555555; color: #F4F4F2; }
+.fa-fig { background: #111111; color: #F4F4F2; }
+.fa-dr  { background: #444444; color: #F4F4F2; }
+.fa-be  { background: #444444; color: #F4F4F2; }
+.fa-co  { background: #444444; color: #F4F4F2; }
+.fa-hn  { background: #555555; color: #F4F4F2; }
+.fa-nw  { background: #333333; color: #F4F4F2; }
+
+/* ── buttons ── */
+.btn-primary { display: inline-flex; align-items: center; gap: 8px; padding: 10px 24px; background: #111111; color: #E8E8E5; border-radius: 7px; font-family: 'Lora', Georgia, serif; font-size: 14px; font-weight: 500; cursor: pointer; border: none; transition: background 0.15s; }
+.btn-primary:hover { background: #2A2A2A; }
+.btn-ghost { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: transparent; color: #555555; border-radius: 7px; font-family: 'Lora', Georgia, serif; font-size: 14px; cursor: pointer; border: 1.5px solid #CCCCCC; transition: border-color 0.15s, color 0.15s; }
+.btn-ghost:hover { border-color: #888888; color: #333333; }
+.btn-danger { display: inline-flex; align-items: center; gap: 8px; padding: 10px 20px; background: #111111; color: #F4F4F2; border-radius: 7px; font-family: 'Lora', Georgia, serif; font-size: 14px; cursor: pointer; border: none; transition: background 0.15s; }
+.btn-danger:hover { background: #333333; }
+
+/* ── form elements ── */
+.sa-field { margin-bottom: 18px; }
+.sa-label { font-family: 'Lora', Georgia, serif; font-size: 12px; font-weight: 500; color: #555555; letter-spacing: 0.5px; display: block; margin-bottom: 6px; }
+.sa-field-input { width: 100%; height: 44px; border: 1.5px solid #AAAAAA; border-radius: 7px; background: #F4F4F2; padding: 0 14px; font-family: 'Lora', Georgia, serif; font-size: 14px; color: #111111; outline: none; box-shadow: none; }
+.sa-field-input::placeholder { color: #AAAAAA; }
+.sa-field-input:focus { border-color: #111111; box-shadow: 2px 2px 0 #999999; }
+.sa-field-select { width: 100%; height: 44px; border: 1.5px solid #AAAAAA; border-radius: 7px; background: #F4F4F2; padding: 0 14px; font-family: 'Lora', Georgia, serif; font-size: 14px; color: #111111; outline: none; appearance: none; }
+</style>
+</head>
+<body>
+
+<!-- ── top nav ── -->
+<div class="preview-nav">
+  <span class="preview-nav-title">ArPage / UI Preview · E-Ink 墨水屏</span>
+  <div class="preview-nav-links">
+    <a href="#s-login">登录页</a>
+    <a href="#s-empty">空状态</a>
+    <a href="#s-main">主页面</a>
+    <a href="#s-search">搜索过滤</a>
+    <a href="#s-hover">卡片操作</a>
+    <a href="#s-add">新增书签</a>
+    <a href="#s-edit">编辑书签</a>
+    <a href="#s-rename">分组重命名</a>
+    <a href="#s-delete">删除确认</a>
+    <a href="#s-newgroup">新建分组</a>
+    <a href="#s-drag">拖拽中</a>
+    <a href="#s-noresult">搜索无结果</a>
+    <a href="#s-nofavicon">无图标</a>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 登录页
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-login">
+  <div class="state-label">登录页 &nbsp;·&nbsp; 首次访问，密码保护</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:700px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+      <div class="sa-grain" id="grain-login"></div>
+
+      <!-- login card -->
+      <div style="width:400px; background:#F4F4F2; border:1px solid #CCCCCC; border-radius:12px; padding:44px 40px; box-shadow:4px 4px 0 #BBBBBB; position:relative; z-index:2;">
+
+        <!-- logo -->
+        <div style="text-align:center; margin-bottom:6px;">
+          <div style="font-family:'Playfair Display',Georgia,serif; font-size:36px; font-weight:700; letter-spacing:-1px; color:#111111;">Ar<span style="color:#111111;">Page</span></div>
+          <div style="font-family:'Lora',Georgia,serif; font-size:13px; font-style:italic; color:#777777; margin-top:4px;">个人书签导航</div>
+        </div>
+
+        <!-- divider -->
+        <div style="border-top:1px solid #DDDDDD; margin:24px 0;"></div>
+
+        <!-- password field -->
+        <div class="sa-field">
+          <label class="sa-label">访问密码</label>
+          <div style="position:relative;">
+            <div style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#888888;">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="6" width="9" height="8" rx="2"/><path d="M5 6V4.5a2.5 2.5 0 015 0V6"/></svg>
+            </div>
+            <input class="sa-field-input" type="password" placeholder="输入访问密码" value="••••••••" style="padding-left:38px;">
+          </div>
+        </div>
+
+        <!-- submit -->
+        <button class="btn-primary" style="width:100%; justify-content:center; height:46px; font-size:15px; margin-top:4px;">
+          进入
+        </button>
+
+      </div>
+
+      <!-- bottom decor -->
+      <div style="margin-top:28px; font-family:'Space Mono',monospace; font-size:10px; letter-spacing:2px; color:#AAAAAA; position:relative; z-index:2;">PERSONAL · SELF-HOSTED · CLOUDFLARE</div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 空状态（首次使用）
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-empty">
+  <div class="state-label">空状态 &nbsp;·&nbsp; KV 无数据，引导创建第一个分组</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:700px;">
+      <div class="sa-grain" id="grain-empty"></div>
+
+      <div class="sa-topbar">
+        <div class="sa-logo">Ar<em>Page</em></div>
+      </div>
+
+      <div class="sa-search-bar">
+        <div class="sa-search-wrap">
+          <div class="sa-search-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l3.5 3.5"/></svg></div>
+          <input class="sa-search-input" placeholder="搜索书签，或按 Enter 跳转 Google…" readonly>
+          <div class="sa-search-hint"><span class="sa-kbd">/</span></div>
+        </div>
+      </div>
+
+      <!-- empty state body -->
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 48px 80px;">
+        <!-- illustration -->
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style="margin-bottom:24px; opacity:0.3;">
+          <rect x="12" y="8" width="42" height="56" rx="4" stroke="#111111" stroke-width="2.5"/>
+          <path d="M12 24h42" stroke="#111111" stroke-width="2"/>
+          <path d="M22 36h22M22 44h16" stroke="#111111" stroke-width="2" stroke-linecap="round"/>
+          <path d="M56 34l8 8-8 8" stroke="#111111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M64 42H44" stroke="#111111" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+
+        <div style="font-family:'Playfair Display',Georgia,serif; font-size:26px; font-weight:600; color:#111111; margin-bottom:10px; letter-spacing:-0.5px;">还没有书签</div>
+        <div style="font-family:'Lora',Georgia,serif; font-size:14px; color:#777777; font-style:italic; margin-bottom:32px; text-align:center; line-height:1.7;">创建第一个分组，然后开始添加常用网站</div>
+
+        <div style="display:flex; gap:12px;">
+          <button class="btn-primary">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v12M1 7h12"/></svg>
+            新建分组
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 主页面（已有书签）
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-main">
+  <div class="state-label">主页面 &nbsp;·&nbsp; 正常浏览状态，有书签和分组</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:860px;">
+      <div class="sa-grain" id="grain-main"></div>
+
+      <div class="sa-topbar">
+        <div class="sa-logo">Ar<em>Page</em></div>
+      </div>
+
+      <div class="sa-search-bar">
+        <div class="sa-search-wrap">
+          <div class="sa-search-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l3.5 3.5"/></svg></div>
+          <input class="sa-search-input" placeholder="搜索书签，或按 Enter 跳转 Google…" readonly>
+          <div class="sa-search-hint"><span class="sa-kbd">/</span></div>
+        </div>
+      </div>
+
+      <div class="sa-content">
+        <!-- pinned -->
+        <div class="sa-pinned">
+          <div class="sa-pinned-header">
+            <span class="sa-pin-icon"><svg viewBox="0 0 12 12" fill="currentColor" width="12" height="12"><path d="M8.5 1L10 2.5 8 5l.8.8.4 2L7 9 5.5 7.5 3 9.5l.4-2L2.5 6.5 4 5 2 2.5 3.5 1l2 2L8 1.5z"/></svg></span>
+            <span class="sa-pin-label">置顶</span>
+            <span style="font-size:11px; color:#999999; margin-left:auto; font-family:'Lora',serif;">4 个</span>
+          </div>
+          <div class="bm-grid">
+            <div class="sa-bm-card"><div class="fav fa-gh">GH</div><div><div class="sa-bm-title">GitHub</div><div class="sa-bm-domain">github.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-cl">AI</div><div><div class="sa-bm-title">Claude</div><div class="sa-bm-domain">claude.ai</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-li">LN</div><div><div class="sa-bm-title">Linear</div><div class="sa-bm-domain">linear.app</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-fig">FG</div><div><div class="sa-bm-title">Figma</div><div class="sa-bm-domain">figma.com</div></div></div>
+          </div>
+        </div>
+
+        <!-- group: 开发工具 -->
+        <div class="sa-group">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+            <span class="sa-group-name">开发工具</span>
+            <div class="sa-group-meta">
+              <span class="sa-group-count">5 个书签</span>
+              <div class="sa-group-actions"><span class="sa-group-action">重命名</span><span class="sa-group-action">删除</span></div>
+            </div>
+          </div>
+          <div class="bm-grid">
+            <div class="sa-bm-card"><div class="fav fa-vr">▲</div><div><div class="sa-bm-title">Vercel</div><div class="sa-bm-domain">vercel.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-cf">CF</div><div><div class="sa-bm-title">Cloudflare</div><div class="sa-bm-domain">dash.cloudflare.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-npm">npm</div><div><div class="sa-bm-title">npm</div><div class="sa-bm-domain">npmjs.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-mdn">MD</div><div><div class="sa-bm-title">MDN Web Docs</div><div class="sa-bm-domain">developer.mozilla.org</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-so">SO</div><div><div class="sa-bm-title">Stack Overflow</div><div class="sa-bm-domain">stackoverflow.com</div></div></div>
+            <div class="sa-bm-add">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
+              添加书签
+            </div>
+          </div>
+        </div>
+
+        <!-- group: 设计 -->
+        <div class="sa-group">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+            <span class="sa-group-name">设计</span>
+            <div class="sa-group-meta">
+              <span class="sa-group-count">3 个书签</span>
+              <div class="sa-group-actions"><span class="sa-group-action">重命名</span><span class="sa-group-action">删除</span></div>
+            </div>
+          </div>
+          <div class="bm-grid">
+            <div class="sa-bm-card"><div class="fav fa-dr">Dr</div><div><div class="sa-bm-title">Dribbble</div><div class="sa-bm-domain">dribbble.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-be">Bé</div><div><div class="sa-bm-title">Behance</div><div class="sa-bm-domain">behance.net</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-co">Co</div><div><div class="sa-bm-title">Coolors</div><div class="sa-bm-domain">coolors.co</div></div></div>
+            <div class="sa-bm-add">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
+              添加书签
+            </div>
+          </div>
+        </div>
+
+        <!-- group: 阅读（折叠） -->
+        <div class="sa-group sa-group-collapsed">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M3 2l4 3-4 3z"/></svg></div>
+            <span class="sa-group-name">阅读收藏</span>
+            <div class="sa-group-meta">
+              <span class="sa-group-count">8 个书签</span>
+              <div class="sa-group-actions"><span class="sa-group-action">重命名</span><span class="sa-group-action">删除</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="sa-add-group">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg>
+          新建分组
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 搜索过滤中
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-search">
+  <div class="state-label">搜索过滤 &nbsp;·&nbsp; 输入关键词，实时过滤书签，平铺展示</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:700px;">
+      <div class="sa-grain" id="grain-search"></div>
+
+      <div class="sa-topbar">
+        <div class="sa-logo">Ar<em>Page</em></div>
+      </div>
+
+      <!-- search bar: active, has text -->
+      <div class="sa-search-bar">
+        <div class="sa-search-wrap">
+          <div class="sa-search-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l3.5 3.5"/></svg></div>
+          <input class="sa-search-input" value="figma" style="border-color:#111111; box-shadow:2px 2px 0 #999999;" readonly>
+          <!-- clear button -->
+          <div style="position:absolute; right:14px; top:50%; transform:translateY(-50%); width:22px; height:22px; display:flex; align-items:center; justify-content:center; background:#E2E2E2; border-radius:50%; cursor:pointer; color:#666666;">
+            <svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><path d="M2 2l6 6M8 2l-6 6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="sa-content">
+        <!-- results header -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid #BBBBBB;">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-family:'Playfair Display',Georgia,serif; font-size:14px; font-weight:600; color:#111111;">搜索结果</span>
+            <span style="font-size:12px; color:#777777; font-family:'Lora',serif; font-style:italic;">3 条匹配</span>
+          </div>
+          <div style="font-size:11px; color:#999999; font-family:'Lora',serif; font-style:italic;">Enter &nbsp;↵&nbsp; 在 Google 搜索「figma」</div>
+        </div>
+
+        <!-- flat results (no groups, highlight match) -->
+        <div class="bm-grid">
+          <div class="sa-bm-card">
+            <div class="fav fa-fig">FG</div>
+            <div>
+              <div class="sa-bm-title">
+                <span style="background:rgba(0,0,0,0.1); border-radius:2px; padding:0 2px;">Figma</span>
+              </div>
+              <div class="sa-bm-domain">figma.com · 置顶</div>
+            </div>
+          </div>
+          <div class="sa-bm-card">
+            <div class="fav fa-fig" style="background:#3A3A5C;">Fg</div>
+            <div>
+              <div class="sa-bm-title"><span style="background:rgba(0,0,0,0.1); border-radius:2px; padding:0 2px;">Figma</span> Community</div>
+              <div class="sa-bm-domain">figma.com/community · 设计</div>
+            </div>
+          </div>
+          <div class="sa-bm-card">
+            <div class="fav fa-dr">Dr</div>
+            <div>
+              <div class="sa-bm-title">Dribbble — <span style="background:rgba(0,0,0,0.1); border-radius:2px; padding:0 2px;">figma</span></div>
+              <div class="sa-bm-domain">dribbble.com · 设计</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- no more results hint -->
+        <div style="margin-top:32px; display:flex; align-items:center; gap:12px;">
+          <div style="flex:1; height:1px; background:#D8CDB8;"></div>
+          <span style="font-size:11px; color:#AAAAAA; font-family:'Lora',serif; font-style:italic;">按 Enter 跳 Google，或 Esc 清除搜索</span>
+          <div style="flex:1; height:1px; background:#D8CDB8;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 书签卡片 Hover 操作
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-hover">
+  <div class="state-label">书签卡片 &nbsp;·&nbsp; Hover 状态，显示置顶 / 编辑 / 删除操作</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:360px;">
+      <div class="sa-grain" id="grain-hover"></div>
+
+      <div class="sa-topbar">
+        <div class="sa-logo">Ar<em>Page</em></div>
+      </div>
+
+      <div class="sa-content" style="padding-top:24px;">
+        <div style="font-family:'Lora',Georgia,serif; font-size:11px; color:#999999; font-style:italic; margin-bottom:14px;">↓ hover 时右侧浮出 ⋯ 按钮；点 ⋯ 展开菜单，点卡片本体直接打开网址，互不干扰</div>
+        <div class="bm-grid" style="align-items:flex-start;">
+
+          <!-- normal card -->
+          <div class="sa-bm-card">
+            <div class="fav fa-gh">GH</div>
+            <div style="flex:1; min-width:0;"><div class="sa-bm-title">GitHub</div><div class="sa-bm-domain">github.com</div></div>
+          </div>
+
+          <!-- hovered card: ⋯ button visible -->
+          <div class="sa-bm-card" style="border-color:#111111; box-shadow:2px 2px 0 #AAAAAA; position:relative;">
+            <div class="fav fa-cl">AI</div>
+            <div style="flex:1; min-width:0;"><div class="sa-bm-title">Claude</div><div class="sa-bm-domain">claude.ai</div></div>
+            <div class="sa-bm-more" style="opacity:1; background:#E2E2E2; border-color:#CCCCCC; color:#333333;">⋯</div>
+          </div>
+
+          <!-- hovered card: ⋯ clicked, dropdown open -->
+          <div class="sa-bm-card" style="border-color:#111111; box-shadow:2px 2px 0 #AAAAAA; position:relative; z-index:20;">
+            <div class="fav fa-li">LN</div>
+            <div style="flex:1; min-width:0;"><div class="sa-bm-title">Linear</div><div class="sa-bm-domain">linear.app</div></div>
+            <div class="sa-bm-more" style="opacity:1; background:#111111; border-color:#111111; color:#E8E8E5;">⋯</div>
+            <!-- dropdown open -->
+            <div class="sa-bm-dropdown" style="display:block;">
+              <div class="sa-bm-dropdown-item">
+                <svg viewBox="0 0 13 13" fill="currentColor"><path d="M8 1L9.5 2.5 7.5 5l.7.7.3 1.8L6.5 8.5 5 7 3 8.5l.3-1.8L2 5.5 3.5 4 1.5 1.5 3 0l1.8 1.8L7 .5z"/></svg>
+                置顶书签
+              </div>
+              <div class="sa-bm-dropdown-item">
+                <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 2l2 2-7 7H2V9z"/><path d="M8 3l2 2"/></svg>
+                编辑
+              </div>
+              <div class="sa-bm-dropdown-divider"></div>
+              <div class="sa-bm-dropdown-item danger">
+                <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 3.5h9M5 3.5V2.5h3v1M4.5 3.5v7h4v-7"/><path d="M5.5 5.5v3M7.5 5.5v3"/></svg>
+                删除
+              </div>
+            </div>
+          </div>
+
+          <!-- normal card -->
+          <div class="sa-bm-card">
+            <div class="fav fa-fig">FG</div>
+            <div style="flex:1; min-width:0;"><div class="sa-bm-title">Figma</div><div class="sa-bm-domain">figma.com</div></div>
+          </div>
+          <div class="sa-bm-add">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
+            添加书签
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 新增书签弹窗 · 初始状态
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-add">
+  <div class="state-label">新增书签弹窗 &nbsp;·&nbsp; 初始状态，URL 未填入，无图标</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:680px; position:relative;">
+      <div class="sa-grain" id="grain-add"></div>
+      <div class="sa-topbar"><div class="sa-logo">Ar<em>Page</em></div></div>
+      <div class="sa-search-bar" style="opacity:0.3; pointer-events:none;"><div class="sa-search-wrap"><div class="sa-search-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l3.5 3.5"/></svg></div><input class="sa-search-input" readonly></div></div>
+      <div class="sa-content" style="opacity:0.2; pointer-events:none; padding-top:0;"><div class="sa-pinned"><div class="bm-grid"><div class="sa-bm-card"><div class="fav fa-gh">GH</div><div><div class="sa-bm-title">GitHub</div></div></div><div class="sa-bm-card"><div class="fav fa-cl">AI</div><div><div class="sa-bm-title">Claude</div></div></div></div></div></div>
+
+      <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); z-index:10;"></div>
+
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:11; width:500px; background:#F4F4F2; border:1px solid #CCCCCC; border-radius:12px; padding:36px 36px 32px; box-shadow:5px 5px 0 #BBBBBB;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px;">
+          <div style="font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:600; color:#111111;">添加书签</div>
+          <div style="width:32px; height:32px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#777777; background:#E2E2E2; cursor:pointer;"><svg width="12" height="12" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"><path d="M2 2l8 8M10 2l-8 8"/></svg></div>
+        </div>
+
+        <!-- URL field: empty, no favicon -->
+        <div class="sa-field">
+          <label class="sa-label">网址</label>
+          <div style="position:relative;">
+            <div style="position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#AAAAAA;">
+              <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="7.5" cy="7.5" r="5.5"/><path d="M7.5 2c-2 1.5-3 3.5-3 5.5s1 4 3 5.5M7.5 2c2 1.5 3 3.5 3 5.5s-1 4-3 5.5M2 7.5h11"/></svg>
+            </div>
+            <input class="sa-field-input" placeholder="https://…" style="padding-left:38px;" readonly>
+          </div>
+        </div>
+
+        <!-- title field: empty -->
+        <div class="sa-field">
+          <label class="sa-label">标题</label>
+          <input class="sa-field-input" placeholder="URL 填入后自动获取" readonly>
+        </div>
+
+        <!-- group selector: closed -->
+        <div class="sa-field" style="margin-bottom:28px;">
+          <label class="sa-label">所属分组</label>
+          <div style="width:100%; height:44px; border:1.5px solid #AAAAAA; border-radius:7px; background:#F4F4F2; padding:0 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-family:'Lora',Georgia,serif; font-size:14px; color:#111111;">
+            <span>设计</span>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" style="color:#888888; flex-shrink:0;"><path d="M1 3l4 4 4-4z"/></svg>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn-ghost">取消</button>
+          <button class="btn-primary" style="opacity:0.45; cursor:not-allowed;">保存书签</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 新增书签弹窗 · 填写完成 + 分组下拉展开
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-add-filled">
+  <div class="state-label">新增书签弹窗 &nbsp;·&nbsp; URL 已填入，图标已获取，分组下拉展开</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:760px; position:relative;">
+      <div class="sa-grain" id="grain-add2"></div>
+      <div class="sa-topbar"><div class="sa-logo">Ar<em>Page</em></div></div>
+      <div class="sa-search-bar" style="opacity:0.3; pointer-events:none;"><div class="sa-search-wrap"><input class="sa-search-input" readonly></div></div>
+      <div class="sa-content" style="opacity:0.2; pointer-events:none; padding-top:0;"><div class="sa-pinned"><div class="bm-grid"><div class="sa-bm-card"><div class="fav fa-gh">GH</div><div><div class="sa-bm-title">GitHub</div></div></div><div class="sa-bm-card"><div class="fav fa-cl">AI</div><div><div class="sa-bm-title">Claude</div></div></div></div></div></div>
+
+      <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); z-index:10;"></div>
+
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:11; width:500px; background:#F4F4F2; border:1px solid #CCCCCC; border-radius:12px; padding:36px 36px 32px; box-shadow:5px 5px 0 #BBBBBB;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px;">
+          <div style="font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:600; color:#111111;">添加书签</div>
+          <div style="width:32px; height:32px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#777777; background:#E2E2E2; cursor:pointer;"><svg width="12" height="12" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"><path d="M2 2l8 8M10 2l-8 8"/></svg></div>
+        </div>
+
+        <!-- URL field: favicon loaded -->
+        <div class="sa-field">
+          <label class="sa-label">网址</label>
+          <div style="position:relative;">
+            <div style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:20px; height:20px; border-radius:4px; background:#111111; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#F4F4F2;">FG</div>
+            <input class="sa-field-input" value="https://figma.com" style="padding-left:40px; border-color:#111111;" readonly>
+          </div>
+          <div style="font-size:11px; color:#888888; font-family:'Lora',serif; font-style:italic; margin-top:5px;">图标已自动获取</div>
+        </div>
+
+        <!-- title field: auto-filled -->
+        <div class="sa-field">
+          <label class="sa-label">标题</label>
+          <input class="sa-field-input" value="Figma" readonly>
+          <div style="font-size:11px; color:#888888; font-family:'Lora',serif; font-style:italic; margin-top:5px;">已从页面自动填入，可手动修改</div>
+        </div>
+
+        <!-- group selector: OPEN dropdown -->
+        <div class="sa-field" style="margin-bottom:180px;">
+          <label class="sa-label">所属分组</label>
+          <div style="position:relative;">
+            <!-- trigger (open state) -->
+            <div style="width:100%; height:44px; border:1.5px solid #111111; border-radius:7px 7px 0 0; background:#F4F4F2; padding:0 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-family:'Lora',Georgia,serif; font-size:14px; color:#111111;">
+              <span>设计</span>
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" style="color:#111111; flex-shrink:0; transform:rotate(180deg);"><path d="M1 3l4 4 4-4z"/></svg>
+            </div>
+            <!-- dropdown list -->
+            <div style="position:absolute; top:100%; left:0; right:0; background:#F4F4F2; border:1.5px solid #111111; border-top:none; border-radius:0 0 7px 7px; z-index:50; box-shadow:3px 3px 0 #CCCCCC;">
+              <!-- selected option -->
+              <div style="padding:10px 14px; background:#E2E2E2; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-family:'Lora',Georgia,serif; font-size:14px; color:#111111;">
+                <span>设计</span>
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#111111" stroke-width="2"><path d="M2 6l3 3 5-5"/></svg>
+              </div>
+              <div style="padding:10px 14px; cursor:pointer; font-family:'Lora',Georgia,serif; font-size:14px; color:#333333;">开发工具</div>
+              <div style="padding:10px 14px; cursor:pointer; font-family:'Lora',Georgia,serif; font-size:14px; color:#333333;">阅读收藏</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn-ghost">取消</button>
+          <button class="btn-primary">保存书签</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 编辑书签弹窗（Favicon 加载中）
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-edit">
+  <div class="state-label">编辑书签弹窗 &nbsp;·&nbsp; 刷新 Favicon，加载中状态</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:680px; position:relative;">
+      <div class="sa-grain" id="grain-edit"></div>
+      <div class="sa-topbar"><div class="sa-logo">Ar<em>Page</em></div></div>
+      <div class="sa-search-bar" style="opacity:0.25; pointer-events:none;"><div class="sa-search-wrap"><input class="sa-search-input" readonly></div></div>
+
+      <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); z-index:10;"></div>
+
+      <!-- modal -->
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:11; width:500px; background:#F4F4F2; border:1px solid #CCCCCC; border-radius:12px; padding:36px 36px 32px; box-shadow:5px 5px 0 #BBBBBB;">
+
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px;">
+          <div style="font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:600; color:#111111;">编辑书签</div>
+          <div style="width:32px; height:32px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#777777; background:#E2E2E2; cursor:pointer;">
+            <svg width="12" height="12" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"><path d="M2 2l8 8M10 2l-8 8"/></svg>
+          </div>
+        </div>
+
+        <!-- URL field: favicon loading -->
+        <div class="sa-field">
+          <label class="sa-label">网址</label>
+          <div style="position:relative;">
+            <!-- loading spinner -->
+            <div style="position:absolute; left:12px; top:50%; transform:translateY(-50%); width:20px; height:20px; border-radius:50%; border:2px solid #CCCCCC; border-top-color:#111111; animation:spin 0.8s linear infinite;"></div>
+            <input class="sa-field-input" value="https://stackoverflow.com" style="padding-left:40px;" readonly>
+            <div style="position:absolute; right:12px; top:50%; transform:translateY(-50%);">
+              <div style="display:flex; align-items:center; gap:6px; font-size:11px; color:#888888; font-family:'Lora',serif; font-style:italic;">
+                <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 2a4 4 0 100 8A4 4 0 006 2zM6 2v2M9.5 6H11"/></svg>
+                刷新图标
+              </div>
+            </div>
+          </div>
+          <div style="font-size:11px; color:#888888; font-family:'Lora',serif; font-style:italic; margin-top:5px;">正在抓取 Favicon…</div>
+        </div>
+
+        <div class="sa-field">
+          <label class="sa-label">标题</label>
+          <input class="sa-field-input" value="Stack Overflow" readonly>
+        </div>
+
+        <div class="sa-field" style="margin-bottom:28px;">
+          <label class="sa-label">所属分组</label>
+          <div style="width:100%; height:44px; border:1.5px solid #AAAAAA; border-radius:7px; background:#F4F4F2; padding:0 14px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; font-family:'Lora',Georgia,serif; font-size:14px; color:#111111;">
+            <span>开发工具</span>
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" style="color:#888888; flex-shrink:0;"><path d="M1 3l4 4 4-4z"/></svg>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn-ghost">取消</button>
+          <button class="btn-primary" style="opacity:0.6; cursor:not-allowed;">保存书签</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+</style>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 分组重命名（内联编辑）
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-rename">
+  <div class="state-label">分组重命名 &nbsp;·&nbsp; 点击「重命名」后分组名变为内联输入框</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:420px;">
+      <div class="sa-grain" id="grain-rename"></div>
+      <div class="sa-topbar"><div class="sa-logo">Ar<em>Page</em></div></div>
+
+      <div class="sa-content" style="padding-top:28px;">
+        <!-- normal group above -->
+        <div class="sa-group" style="margin-bottom:20px;">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+            <span class="sa-group-name">开发工具</span>
+            <div class="sa-group-meta"><span class="sa-group-count">5 个书签</span></div>
+          </div>
+        </div>
+
+        <!-- renaming group -->
+        <div class="sa-group">
+          <div class="sa-group-header" style="border-bottom-color:#111111;">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+
+            <!-- inline rename input -->
+            <input
+              value="设计工具"
+              style="font-family:'Playfair Display',Georgia,serif; font-size:15px; font-weight:600; color:#111111; border:none; border-bottom:2px solid #111111; background:transparent; outline:none; padding:0 4px 2px 0; width:140px;"
+              readonly
+            >
+            <div style="font-size:11px; color:#777777; font-family:'Lora',serif; font-style:italic; margin-left:10px;">回车确认 &nbsp;·&nbsp; Esc 取消</div>
+
+            <div class="sa-group-meta">
+              <span class="sa-group-count">3 个书签</span>
+              <div class="sa-group-actions">
+                <span class="sa-group-action" style="color:#111111;">确认</span>
+                <span class="sa-group-action">取消</span>
+              </div>
+            </div>
+          </div>
+          <div class="bm-grid">
+            <div class="sa-bm-card"><div class="fav fa-fig">FG</div><div><div class="sa-bm-title">Figma</div><div class="sa-bm-domain">figma.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-dr">Dr</div><div><div class="sa-bm-title">Dribbble</div><div class="sa-bm-domain">dribbble.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-co">Co</div><div><div class="sa-bm-title">Coolors</div><div class="sa-bm-domain">coolors.co</div></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 删除确认弹窗
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-delete">
+  <div class="state-label">删除确认 &nbsp;·&nbsp; 书签删除 / 非空分组删除禁止</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:580px; position:relative;">
+      <div class="sa-grain" id="grain-delete"></div>
+      <div class="sa-topbar"><div class="sa-logo">Ar<em>Page</em></div></div>
+      <div class="sa-search-bar" style="opacity:0.25; pointer-events:none;"><div class="sa-search-wrap"><input class="sa-search-input" readonly></div></div>
+      <div class="sa-content" style="opacity:0.2; pointer-events:none; padding-top:0;">
+        <div class="sa-pinned"><div class="bm-grid"><div class="sa-bm-card"><div class="fav fa-gh">GH</div><div><div class="sa-bm-title">GitHub</div></div></div></div></div>
+      </div>
+
+      <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); z-index:10;"></div>
+
+      <!-- delete bookmark modal -->
+      <div style="position:absolute; top:42%; left:32%; transform:translate(-50%,-50%); z-index:12; width:380px; background:#F4F4F2; border:1px solid #CCCCCC; border-radius:12px; padding:32px; box-shadow:5px 5px 0 #BBBBBB;">
+        <div style="display:flex; gap:14px; align-items:flex-start; margin-bottom:24px;">
+          <div style="width:36px; height:36px; border-radius:8px; background:#EEEEEE; border:1px solid #E8C8C8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#444444" stroke-width="1.8"><path d="M3 4h10M6 4V3h4v1M5 4v9h6V4"/><path d="M7 7v4M9 7v4"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Playfair Display',Georgia,serif; font-size:17px; font-weight:600; color:#111111; margin-bottom:6px;">删除书签</div>
+            <div style="font-size:13px; color:#555555; font-family:'Lora',serif; line-height:1.6;">将删除书签「<strong>GitHub</strong>」，<br>此操作不可撤销。</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn-ghost">取消</button>
+          <button class="btn-danger">确认删除</button>
+        </div>
+      </div>
+
+      <!-- delete non-empty group (blocked) modal -->
+      <div style="position:absolute; top:42%; left:68%; transform:translate(-50%,-50%); z-index:12; width:380px; background:#F4F4F2; border:1px solid #CCCCCC; border-radius:12px; padding:32px; box-shadow:5px 5px 0 #BBBBBB;">
+        <div style="display:flex; gap:14px; align-items:flex-start; margin-bottom:24px;">
+          <div style="width:36px; height:36px; border-radius:8px; background:#FFF5E0; border:1px solid #E8D8A0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8B6000" stroke-width="1.8"><path d="M8 3v6M8 11v1"/><circle cx="8" cy="8" r="6"/></svg>
+          </div>
+          <div>
+            <div style="font-family:'Playfair Display',Georgia,serif; font-size:17px; font-weight:600; color:#111111; margin-bottom:6px;">无法删除分组</div>
+            <div style="font-size:13px; color:#555555; font-family:'Lora',serif; line-height:1.6;">「开发工具」中还有 5 个书签。<br>请先移动或删除组内所有书签。</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn-ghost">我知道了</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     STATE: 新建分组（内联输入）
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-newgroup">
+  <div class="state-label">新建分组 &nbsp;·&nbsp; 点击「新建分组」后底部出现内联输入框</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:560px;">
+      <div class="sa-grain" id="grain-newgroup"></div>
+      <div class="sa-topbar"><div class="sa-logo">Ar<em>Page</em></div></div>
+
+      <div class="sa-content" style="padding-top:28px;">
+        <!-- existing groups -->
+        <div class="sa-group" style="margin-bottom:20px;">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+            <span class="sa-group-name">开发工具</span>
+            <div class="sa-group-meta"><span class="sa-group-count">5 个书签</span></div>
+          </div>
+        </div>
+        <div class="sa-group" style="margin-bottom:20px;">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+            <span class="sa-group-name">设计</span>
+            <div class="sa-group-meta"><span class="sa-group-count">3 个书签</span></div>
+          </div>
+        </div>
+
+        <!-- new group inline input (replaces the "+ 新建分组" button) -->
+        <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; border:1.5px solid #111111; border-radius:7px; background:#F4F4F2; box-shadow:1px 1px 0 #CCCCCC; max-width:320px;">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#111111" stroke-width="1.8"><path d="M2 7h10M7 2v10"/></svg>
+          <input
+            value="阅读收藏"
+            style="flex:1; border:none; background:transparent; font-family:'Lora',Georgia,serif; font-size:14px; color:#111111; outline:none; min-width:0;"
+            readonly
+          >
+          <span style="font-size:10px; color:#999999; font-family:monospace; letter-spacing:0.5px; white-space:nowrap;">回车确认</span>
+          <span style="font-size:10px; color:#C8BDA8; font-family:monospace;">Esc</span>
+        </div>
+        <div style="margin-top:8px; font-size:11px; color:#AAAAAA; font-family:'Lora',serif; font-style:italic; padding-left:2px;">最多 40 字</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 拖拽排序中
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-drag">
+  <div class="state-label">拖拽排序 &nbsp;·&nbsp; 书签被拖起，原位占位，目标位高亮</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:480px;">
+      <div class="sa-grain" id="grain-drag"></div>
+      <div class="sa-topbar"><div class="sa-logo">Ar<em>Page</em></div></div>
+
+      <div class="sa-content" style="padding-top:24px;">
+        <div style="font-family:'Lora',Georgia,serif; font-size:11px; color:#999999; font-style:italic; margin-bottom:14px;">↓「Cloudflare」正在被拖动，原位留白，鼠标所在位置高亮插入点</div>
+
+        <div class="sa-group">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+            <span class="sa-group-name">开发工具</span>
+          </div>
+          <div class="bm-grid" style="align-items:center;">
+
+            <div class="sa-bm-card"><div class="fav fa-vr">▲</div><div><div class="sa-bm-title">Vercel</div><div class="sa-bm-domain">vercel.com</div></div></div>
+
+            <!-- drag placeholder (original position) -->
+            <div style="min-width:188px; height:46px; border:1.5px dashed #AAAAAA; border-radius:7px; background:rgba(170,170,170,0.2);"></div>
+
+            <div class="sa-bm-card"><div class="fav fa-npm">npm</div><div><div class="sa-bm-title">npm</div><div class="sa-bm-domain">npmjs.com</div></div></div>
+
+            <!-- drop target indicator -->
+            <div style="width:3px; height:46px; background:#111111; border-radius:2px; flex-shrink:0; box-shadow:none;"></div>
+
+            <div class="sa-bm-card"><div class="fav fa-mdn">MD</div><div><div class="sa-bm-title">MDN Web Docs</div><div class="sa-bm-domain">developer.mozilla.org</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-so">SO</div><div><div class="sa-bm-title">Stack Overflow</div><div class="sa-bm-domain">stackoverflow.com</div></div></div>
+
+            <div class="sa-bm-add"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>添加书签</div>
+          </div>
+        </div>
+
+        <!-- dragging card (floating) -->
+        <div style="margin-top:16px; display:flex; align-items:center; gap:8px;">
+          <div style="font-family:'Lora',Georgia,serif; font-size:11px; color:#999999; font-style:italic;">拖动中的卡片（跟随鼠标，带阴影，略微旋转）：</div>
+        </div>
+        <div style="margin-top:8px; display:inline-flex;">
+          <div class="sa-bm-card" style="border-color:#111111; box-shadow:4px 4px 0 #AAAAAA; transform:rotate(-1.5deg) scale(1.02); opacity:0.95; cursor:grabbing;">
+            <div class="fav fa-cf">CF</div>
+            <div><div class="sa-bm-title">Cloudflare</div><div class="sa-bm-domain">dash.cloudflare.com</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 搜索无结果
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-noresult">
+  <div class="state-label">搜索无结果 &nbsp;·&nbsp; 无匹配书签，提示跳 Google</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:500px;">
+      <div class="sa-grain" id="grain-noresult"></div>
+      <div class="sa-topbar"><div class="sa-logo">Ar<em>Page</em></div></div>
+
+      <div class="sa-search-bar">
+        <div class="sa-search-wrap">
+          <div class="sa-search-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l3.5 3.5"/></svg></div>
+          <input class="sa-search-input" value="deno runtime" style="border-color:#111111; box-shadow:2px 2px 0 #999999;" readonly>
+          <div style="position:absolute; right:14px; top:50%; transform:translateY(-50%); width:22px; height:22px; display:flex; align-items:center; justify-content:center; background:#E2E2E2; border-radius:50%; cursor:pointer; color:#666666;">
+            <svg width="10" height="10" viewBox="0 0 10 10" stroke="currentColor" stroke-width="2"><path d="M2 2l6 6M8 2l-6 6"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="sa-content">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:32px; padding-bottom:10px; border-bottom:1px solid #BBBBBB;">
+          <span style="font-family:'Playfair Display',Georgia,serif; font-size:14px; font-weight:600; color:#111111;">搜索结果</span>
+          <span style="font-size:12px; color:#999999; font-family:'Lora',serif; font-style:italic;">无匹配书签</span>
+        </div>
+
+        <!-- empty results -->
+        <div style="display:flex; flex-direction:column; align-items:center; padding:16px 0 40px;">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" style="opacity:0.2; margin-bottom:16px;">
+            <circle cx="21" cy="21" r="13" stroke="#111111" stroke-width="2.5"/>
+            <path d="M30 30l9 9" stroke="#111111" stroke-width="2.5" stroke-linecap="round"/>
+            <path d="M16 21h10M21 16v10" stroke="#111111" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+          <div style="font-family:'Lora',Georgia,serif; font-size:13px; color:#777777; font-style:italic; margin-bottom:20px;">书签中没有「deno runtime」</div>
+
+          <!-- google fallback CTA -->
+          <div style="display:flex; align-items:center; gap:10px; padding:12px 20px; background:#E2E2E2; border:1px solid #BBBBBB; border-radius:8px; cursor:pointer; max-width:360px;">
+            <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="#111111" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3"/></svg>
+            <span style="font-family:'Lora',Georgia,serif; font-size:13px; color:#111111;">在 Google 搜索「deno runtime」</span>
+            <span style="font-family:monospace; font-size:10px; color:#777777; background:#E8E8E5; border:1px solid #CCCCCC; border-radius:3px; padding:1px 6px;">Enter ↵</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 书签无图标（默认图标）
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-nofavicon">
+  <div class="state-label">书签无图标 &nbsp;·&nbsp; Favicon 三级回退均失败，显示默认图标</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:380px;">
+      <div class="sa-grain" id="grain-nofavicon"></div>
+      <div class="sa-topbar"><div class="sa-logo">Ar<em>Page</em></div></div>
+
+      <div class="sa-content" style="padding-top:24px;">
+        <div style="font-family:'Lora',Georgia,serif; font-size:11px; color:#999999; font-style:italic; margin-bottom:14px;">↓ 第三张卡片 favicon 获取失败，显示默认书签图标，不影响其他卡片</div>
+        <div class="bm-grid">
+          <div class="sa-bm-card">
+            <div class="fav fa-gh">GH</div>
+            <div><div class="sa-bm-title">GitHub</div><div class="sa-bm-domain">github.com</div></div>
+          </div>
+          <div class="sa-bm-card">
+            <div class="fav fa-cf">CF</div>
+            <div><div class="sa-bm-title">Cloudflare</div><div class="sa-bm-domain">dash.cloudflare.com</div></div>
+          </div>
+          <!-- no favicon card: default icon -->
+          <div class="sa-bm-card">
+            <div class="fav" style="background:#E2E2E2; border:1px solid #CCCCCC;">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="#777777" stroke-width="1.5"><path d="M2 2h9v9H2z"/><path d="M2 5h9"/><path d="M5 5v6"/></svg>
+            </div>
+            <div><div class="sa-bm-title">内网系统</div><div class="sa-bm-domain">192.168.1.1</div></div>
+          </div>
+          <div class="sa-bm-card">
+            <div class="fav fa-so">SO</div>
+            <div><div class="sa-bm-title">Stack Overflow</div><div class="sa-bm-domain">stackoverflow.com</div></div>
+          </div>
+          <!-- another no favicon card -->
+          <div class="sa-bm-card">
+            <div class="fav" style="background:#E2E2E2; border:1px solid #CCCCCC;">
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="#777777" stroke-width="1.5"><path d="M2 2h9v9H2z"/><path d="M2 5h9"/><path d="M5 5v6"/></svg>
+            </div>
+            <div><div class="sa-bm-title">旧版后台</div><div class="sa-bm-domain">admin.local</div></div>
+          </div>
+          <div class="sa-bm-add">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
+            添加书签
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="height:60px; background:#111;"></div>
+
+<script>
+// E-ink dithering texture: scattered dark microdots on cool gray ground
+(function() {
+  const ids = ['grain-login','grain-empty','grain-main','grain-search','grain-hover','grain-add','grain-add2','grain-edit','grain-rename','grain-delete','grain-newgroup','grain-drag','grain-noresult','grain-nofavicon'];
+  const canvas = document.createElement('canvas');
+  const size = 256; canvas.width = size; canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  const img = ctx.createImageData(size, size);
+  for (let i = 0; i < img.data.length; i += 4) {
+    const v = Math.random();
+    // Sparse black microdots simulating e-ink microcapsule dithering
+    const isDot = v < 0.07;
+    img.data[i]     = isDot ? 40 : 220;
+    img.data[i + 1] = isDot ? 40 : 220;
+    img.data[i + 2] = isDot ? 40 : 220;
+    img.data[i + 3] = isDot ? Math.floor(v * 120) : 0;
+  }
+  ctx.putImageData(img, 0, 0);
+  const dataUrl = canvas.toDataURL();
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.backgroundImage = `url(${dataUrl})`;
+  });
+})();
+</script>
+
+</body>
+</html>

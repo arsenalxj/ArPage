@@ -1,0 +1,15 @@
+{
+  "name": "arpage",
+  "private": true,
+  "scripts": {
+    "dev:web": "npm --prefix web run dev",
+    "dev:worker": "wrangler pages dev --proxy 5173 --compatibility-date 2024-09-23",
+    "build": "npm --prefix web run build",
+    "deploy": "npm run build && wrangler pages deploy --project-name arpage --commit-dirty=true",
+    "deploy:cloudflare": "powershell -ExecutionPolicy Bypass -File scripts/deploy-cloudflare.ps1"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "wrangler": "^3.91.0"
+  }
+}
