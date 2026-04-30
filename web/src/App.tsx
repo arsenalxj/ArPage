@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useBookmarks } from './hooks/useBookmarks'
 import { LoginPage } from './components/LoginPage'
 import { SearchBar } from './components/SearchBar'
@@ -8,7 +8,36 @@ import { GroupModal } from './components/GroupModal'
 export function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [groupModalOpen, setGroupModalOpen] = useState(false)
+  const [visitorIp, setVisitorIp] = useState<string | null>(null)
+  const [currentTime, setCurrentTime] = useState(() => formatTime(new Date()))
   const store = useBookmarks()
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setCurrentTime(formatTime(new Date()))
+    }, 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+
+  useEffect(() => {
+    if (store.status !== 'ok') {
+      setVisitorIp(null)
+      return
+    }
+
+    let active = true
+    fetch('/api/ip')
+      .then(res => res.ok ? res.json() : null)
+      .then((body: { ip?: string } | null) => {
+        if (!active) return
+        setVisitorIp(body?.ip?.trim() || null)
+      })
+      .catch(() => {
+        if (active) setVisitorIp(null)
+      })
+
+    return () => { active = false }
+  }, [store.status])
 
   function handleEnter(query: string) {
     const trimmed = query.trim()
@@ -66,6 +95,14 @@ export function App() {
       <div className="h-[54px] border-b border-border-section bg-paper/95 flex items-center
         justify-between px-12" style={{ backdropFilter: 'none' }}>
         <div className="font-display text-[22px] font-bold tracking-tight text-ink">ArPage</div>
+        <div className="ml-auto mr-[18px] flex items-center gap-2.5 font-mono text-[10px] leading-none tracking-[1.4px] text-ink-label uppercase whitespace-nowrap">
+          {visitorIp && (
+            <span className="inline-flex h-6 items-center rounded-[5px] border border-border-default bg-paper-section px-[9px]">
+              IP: {visitorIp}
+            </span>
+          )}
+          <span className="text-ink-muted">{currentTime}</span>
+        </div>
         <button
           onClick={async () => {
             await fetch('/api/auth', { method: 'DELETE' })
@@ -109,6 +146,11 @@ export function App() {
       )}
     </div>
   )
+}
+
+function formatTime(date: Date): string {
+  const pad = (value: number) => value.toString().padStart(2, '0')
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
 }
 
 function EmptyState({ onAddGroup }: { onAddGroup: () => void }) {

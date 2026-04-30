@@ -146,6 +146,7 @@ Base unit: **8px**
 | Search Bar | — | Empty, Focused, Filtering | 宽 660px 居中；Filtering 态显示匹配文字高亮（`rgba(0,0,0,0.1)` 底） |
 | Kbd Hint | — | — | `background:#E2E2E2; border:1px solid #AAAAAA; border-radius:4px` |
 | Inline Input | Group Rename | Editing | 复用 `.sa-field-input` 样式，内联替换对应文字节点；新建分组不使用内联输入 |
+| Topbar Meta | IP Chip, Time | — | Topbar 中部，`ml-auto` 推至右侧。IP chip：`height 24px; padding 0 9px; border 1px solid #CCCCCC; border-radius 5px; background #E2E2E2`；IP 获取失败时不渲染。时间：`Space Mono 10px #777777`，始终显示，每秒刷新。 |
 | Delete Confirm | — | — | 弹窗内红色警示文字为深灰 `#444`，按钮仍为黑色 Primary |
 
 ---
@@ -158,7 +159,7 @@ Base unit: **8px**
 
 ```
 ┌──────────────────────────────────┐
-│  [Logo]              [icon btn]  │  ← topbar 54px
+│  [Logo]  [IP chip][time][icnbtn] │  ← topbar 54px
 ├──────────────────────────────────┤
 │         [   Search Bar   ]       │  ← 搜索区 ~96px
 ├──────────────────────────────────┤

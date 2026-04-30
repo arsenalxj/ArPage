@@ -58,6 +58,9 @@ body { background: #111; font-family: sans-serif; }
 }
 .sa-logo { font-family: 'Playfair Display', Georgia, serif; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; color: #111111; }
 .sa-logo em { font-style: normal; color: #111111; }
+.sa-topbar-meta { margin-left: auto; margin-right: 18px; display: flex; align-items: center; gap: 10px; font-family: 'Space Mono', monospace; font-size: 10px; line-height: 1; letter-spacing: 1.4px; color: #555555; text-transform: uppercase; white-space: nowrap; }
+.sa-topbar-chip { display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border: 1px solid #CCCCCC; border-radius: 5px; background: #E2E2E2; }
+.sa-topbar-time { color: #777777; }
 .sa-topbar-right { display: flex; align-items: center; gap: 4px; }
 .sa-icon-btn { width: 34px; height: 34px; border-radius: 7px; display: flex; align-items: center; justify-content: center; color: #666666; cursor: pointer; }
 .sa-icon-btn:hover { background: rgba(0,0,0,0.06); }
@@ -386,6 +389,13 @@ body { background: #111; font-family: sans-serif; }
 
       <div class="sa-topbar">
         <div class="sa-logo">Ar<em>Page</em></div>
+        <div class="sa-topbar-meta">
+          <span class="sa-topbar-chip">IP: 188.253.121.62</span>
+          <span class="sa-topbar-time">14:32:08</span>
+        </div>
+        <div class="sa-topbar-right">
+          <div class="sa-icon-btn" title="Logout"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"/></svg></div>
+        </div>
       </div>
 
       <div class="sa-search-bar">
