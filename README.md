@@ -10,6 +10,7 @@
 - 全局置顶：置顶书签会显示在顶部置顶区，同时保留在原分组内。
 - 拖拽排序：支持组内排序、跨组移动、置顶区排序和分组排序。
 - favicon 抓取：服务端代理获取网站图标，失败时不影响保存。
+- 网站图标：提供浏览器标签页、移动端主屏和高清 PNG 图标。
 
 ## 技术栈
 
@@ -19,7 +20,7 @@
 | 拖拽 | @dnd-kit/core + @dnd-kit/sortable |
 | API | Cloudflare Pages Functions |
 | 存储 | Cloudflare KV |
-| 部署 | Cloudflare Pages |
+| 部署 | Cloudflare Pages + GitHub Actions |
 
 ## 目录结构
 
@@ -28,6 +29,8 @@
 ├── functions/api/          Cloudflare Pages Functions
 ├── functions/_lib/         API 共享工具
 ├── web/src/                React 前端源码
+├── web/public/             静态资源和网站图标
+├── .github/workflows/      CI 与自动部署配置
 ├── docs/DanDan/            功能方案和 UI 设计文档
 ├── wrangler.toml           Cloudflare 配置
 └── package.json            根项目脚本
@@ -93,6 +96,21 @@ wrangler pages secret put AUTH_SECRET
 
 ## 部署
 
+### 自动部署
+
+推送到 `master` 后，GitHub Actions 会自动执行构建并部署到 Cloudflare Pages。PR 到 `master` 时只执行构建检查，不部署。
+
+需要先在 GitHub Repository Secrets 中配置：
+
+```text
+CLOUDFLARE_API_TOKEN
+CLOUDFLARE_ACCOUNT_ID
+```
+
+`PASSWORD` 和 `AUTH_SECRET` 仍然是 Cloudflare Pages 运行时 secret，不需要放进 GitHub Actions。
+
+### 手动部署
+
 首次部署或需要自动准备 Pages/KV 时：
 
 ```bash
@@ -110,6 +128,7 @@ npm run deploy
 ## 设计文档
 
 - 功能方案：`docs/DanDan/plan_bookmark_nav.md`
+- CI 与自动部署方案：`docs/DanDan/plan_github_actions_ci_deploy.md`
 - UI 规范：`docs/DanDan/ui-design-spec.md`
 - UI 预览：`docs/DanDan/ui-preview.html`
 

@@ -4,10 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概况
 
-个人书签导航页，部署到 Cloudflare Pages + Workers + KV。密码保护（httpOnly cookie），支持分组、全局置顶、拖拽排序、书签增删改查、自动抓取 favicon。
+个人书签导航页，部署到 Cloudflare Pages + Pages Functions + KV。密码保护（httpOnly cookie），支持分组、全局置顶、拖拽排序、书签增删改查、自动抓取 favicon，并配置 GitHub Actions 自动部署。
 
 设计文档：
 - 功能方案：`docs/DanDan/plan_bookmark_nav.md`
+- CI 与自动部署方案：`docs/DanDan/plan_github_actions_ci_deploy.md`
 - UI 规范：`docs/DanDan/ui-design-spec.md`
 - UI 效果图：`docs/DanDan/ui-preview.html`
 
@@ -31,6 +32,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │   ├── hooks/
 │   │   └── useBookmarks.ts    数据获取与乐观更新
 │   └── App.tsx
+├── web/public/             静态资源和网站图标
+├── .github/workflows/      GitHub Actions CI 与自动部署
 ├── wrangler.toml
 └── package.json            monorepo 根配置
 ```
@@ -39,7 +42,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **前端**：React 18 + TypeScript + Vite + Tailwind CSS
 - **拖拽**：@dnd-kit/core + @dnd-kit/sortable
-- **部署**：Cloudflare Pages（前端）+ Pages Functions（API）
+- **部署**：Cloudflare Pages（前端）+ Pages Functions（API）+ GitHub Actions
 - **存储**：Cloudflare KV，单 key `"data"` 存全量 JSON
 
 ## 核心数据结构
@@ -93,7 +96,7 @@ interface Bookmark {
 - **分组新增**：页面底部内联输入框，Enter 确认，Esc 取消
 - **非空分组**：不允许直接删除，提示先移动或删除组内书签
 
-## 部署命令（实现后）
+## 部署命令
 
 ```bash
 # 本地开发
@@ -109,6 +112,12 @@ wrangler kv:namespace create BOOKMARKS
 # 构建前端
 cd web && npm run build
 ```
+
+GitHub Actions 约定：
+- PR 到 `master`：执行 `npm ci`、`npm --prefix web ci`、`npm run build`，不部署。
+- push 到 `master`：构建成功后执行 Cloudflare Pages 部署。
+- GitHub Repository Secrets 需要配置 `CLOUDFLARE_API_TOKEN` 和 `CLOUDFLARE_ACCOUNT_ID`。
+- `PASSWORD` 和 `AUTH_SECRET` 仍然通过 Cloudflare Pages Secret 配置，不放进 GitHub Actions。
 
 `wrangler.toml` 关键配置：
 ```toml
