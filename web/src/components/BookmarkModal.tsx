@@ -49,6 +49,15 @@ export function BookmarkModal({ bookmark, defaultGroupId, groups, onSave, onClos
     if (u) fetchFavicon(u)
   }
 
+  function handleFaviconError() {
+    const fallback = googleS2FaviconUrl(normalizeUrl(url))
+    if (fallback && favicon !== fallback) {
+      setFavicon(fallback)
+      return
+    }
+    setFavicon(null)
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
     const normalizedUrl = normalizeUrl(url)
@@ -129,7 +138,12 @@ export function BookmarkModal({ bookmark, defaultGroupId, groups, onSave, onClos
                 {fetchingFavicon ? (
                   <span className="text-[10px] text-ink-muted animate-pulse font-mono">…</span>
                 ) : favicon ? (
-                  <img src={favicon} alt="" className="w-full h-full object-contain" />
+                  <img
+                    src={favicon}
+                    alt=""
+                    className="w-full h-full object-contain"
+                    onError={handleFaviconError}
+                  />
                 ) : (
                   <GlobeIcon />
                 )}
@@ -225,6 +239,15 @@ function normalizeUrl(raw: string): string {
   // If it looks like a domain, prepend https://
   if (/^[\w-]+(\.[\w-]+)+/.test(trimmed)) return `https://${trimmed}`
   return ''
+}
+
+function googleS2FaviconUrl(rawUrl: string): string | null {
+  try {
+    const { hostname } = new URL(rawUrl)
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=64`
+  } catch {
+    return null
+  }
 }
 
 function CloseIcon() {

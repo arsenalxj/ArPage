@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { Bookmark } from '../types'
@@ -20,7 +20,12 @@ export function BookmarkCard({
   sortableId, dragType, overlay,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [faviconSrc, setFaviconSrc] = useState(bookmark.favicon)
   const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setFaviconSrc(bookmark.favicon)
+  }, [bookmark.favicon])
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({
@@ -64,12 +69,15 @@ export function BookmarkCard({
     >
       {/* Favicon */}
       <div className="w-[26px] h-[26px] rounded-md flex-shrink-0 flex items-center justify-center overflow-hidden">
-        {bookmark.favicon ? (
+        {faviconSrc ? (
           <img
-            src={bookmark.favicon}
+            src={faviconSrc}
             alt=""
             className="w-full h-full object-contain"
-            onError={e => { (e.target as HTMLImageElement).style.display = 'none' }}
+            onError={() => {
+              const fallback = googleS2FaviconUrl(bookmark.url)
+              setFaviconSrc(fallback && faviconSrc !== fallback ? fallback : null)
+            }}
           />
         ) : (
           <div className="w-full h-full bg-ink flex items-center justify-center text-paper
@@ -193,6 +201,15 @@ function getHostname(raw: string): string {
     return new URL(raw).hostname
   } catch {
     return raw
+  }
+}
+
+function googleS2FaviconUrl(rawUrl: string): string | null {
+  try {
+    const { hostname } = new URL(rawUrl)
+    return `https://www.google.com/s2/favicons?domain=${encodeURIComponent(hostname)}&sz=64`
+  } catch {
+    return null
   }
 }
 
