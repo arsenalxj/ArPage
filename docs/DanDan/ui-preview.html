@@ -310,6 +310,70 @@ body { background: #111; font-family: sans-serif; }
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════
+     STATE: 空状态 · 新建分组弹窗
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-empty-newgroup">
+  <div class="state-label">空状态 · 新建分组弹窗 &nbsp;·&nbsp; 首次使用时不再调用系统弹窗</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:700px; position:relative;">
+      <div class="sa-grain" id="grain-empty-newgroup"></div>
+
+      <div class="sa-topbar">
+        <div class="sa-logo">Ar<em>Page</em></div>
+      </div>
+
+      <div class="sa-search-bar" style="opacity:0.28; pointer-events:none;">
+        <div class="sa-search-wrap">
+          <div class="sa-search-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l3.5 3.5"/></svg></div>
+          <input class="sa-search-input" placeholder="搜索书签，或按 Enter 跳转 Google…" readonly>
+          <div class="sa-search-hint"><span class="sa-kbd">/</span></div>
+        </div>
+      </div>
+
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; padding:44px 48px 80px; opacity:0.22; pointer-events:none;">
+        <svg width="80" height="80" viewBox="0 0 80 80" fill="none" style="margin-bottom:24px; opacity:0.3;">
+          <rect x="12" y="8" width="42" height="56" rx="4" stroke="#111111" stroke-width="2.5"/>
+          <path d="M12 24h42" stroke="#111111" stroke-width="2"/>
+          <path d="M22 36h22M22 44h16" stroke="#111111" stroke-width="2" stroke-linecap="round"/>
+          <path d="M56 34l8 8-8 8" stroke="#111111" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M64 42H44" stroke="#111111" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+        <div style="font-family:'Playfair Display',Georgia,serif; font-size:26px; font-weight:600; color:#111111; margin-bottom:10px; letter-spacing:-0.5px;">还没有书签</div>
+        <div style="font-family:'Lora',Georgia,serif; font-size:14px; color:#777777; font-style:italic; margin-bottom:32px; text-align:center; line-height:1.7;">创建第一个分组，然后开始添加常用网站</div>
+        <button class="btn-primary">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 1v12M1 7h12"/></svg>
+          新建分组
+        </button>
+      </div>
+
+      <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); z-index:10;"></div>
+
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:11; width:420px; background:#F4F4F2; border:1px solid #CCCCCC; border-radius:12px; padding:34px 34px 30px; box-shadow:5px 5px 0 #BBBBBB;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+          <div>
+            <div style="font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:600; color:#111111;">新建分组</div>
+          </div>
+          <div style="width:32px; height:32px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#777777; background:#E2E2E2; cursor:pointer;"><svg width="12" height="12" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"><path d="M2 2l8 8M10 2l-8 8"/></svg></div>
+        </div>
+
+        <div class="sa-field" style="margin-bottom:26px;">
+          <label class="sa-label">分组名称</label>
+          <input class="sa-field-input" value="Work" readonly style="border-color:#111111; box-shadow:2px 2px 0 #999999;">
+          <div style="display:flex; justify-content:flex-end; margin-top:6px;">
+            <span style="font-size:10px; color:#999999; font-family:'Space Mono',monospace;">4 / 40</span>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn-ghost">取消</button>
+          <button class="btn-primary">创建分组</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 
 <!-- ══════════════════════════════════════════
      STATE: 主页面（已有书签）
@@ -857,16 +921,16 @@ body { background: #111; font-family: sans-serif; }
 </div>
 
 <!-- ══════════════════════════════════════════
-     STATE: 新建分组（内联输入）
+     STATE: 新建分组弹窗（已有分组）
      ══════════════════════════════════════════ -->
 <div class="state-section" id="s-newgroup">
-  <div class="state-label">新建分组 &nbsp;·&nbsp; 点击「新建分组」后底部出现内联输入框</div>
+  <div class="state-label">新建分组弹窗 &nbsp;·&nbsp; 所有入口统一使用 Modal，不再使用内联输入</div>
   <div class="screen-wrap">
-    <div class="sa" style="min-height:560px;">
+    <div class="sa" style="min-height:620px; position:relative;">
       <div class="sa-grain" id="grain-newgroup"></div>
       <div class="sa-topbar"><div class="sa-logo">Ar<em>Page</em></div></div>
 
-      <div class="sa-content" style="padding-top:28px;">
+      <div class="sa-content" style="padding-top:28px; opacity:0.24; pointer-events:none;">
         <!-- existing groups -->
         <div class="sa-group" style="margin-bottom:20px;">
           <div class="sa-group-header">
@@ -883,18 +947,34 @@ body { background: #111; font-family: sans-serif; }
           </div>
         </div>
 
-        <!-- new group inline input (replaces the "+ 新建分组" button) -->
-        <div style="display:flex; align-items:center; gap:10px; padding:10px 14px; border:1.5px solid #111111; border-radius:7px; background:#F4F4F2; box-shadow:1px 1px 0 #CCCCCC; max-width:320px;">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#111111" stroke-width="1.8"><path d="M2 7h10M7 2v10"/></svg>
-          <input
-            value="阅读收藏"
-            style="flex:1; border:none; background:transparent; font-family:'Lora',Georgia,serif; font-size:14px; color:#111111; outline:none; min-width:0;"
-            readonly
-          >
-          <span style="font-size:10px; color:#999999; font-family:monospace; letter-spacing:0.5px; white-space:nowrap;">回车确认</span>
-          <span style="font-size:10px; color:#C8BDA8; font-family:monospace;">Esc</span>
+        <div class="sa-add-group">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
+          新建分组
         </div>
-        <div style="margin-top:8px; font-size:11px; color:#AAAAAA; font-family:'Lora',serif; font-style:italic; padding-left:2px;">最多 40 字</div>
+      </div>
+
+      <div style="position:absolute; inset:0; background:rgba(0,0,0,0.5); z-index:10;"></div>
+
+      <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:11; width:420px; background:#F4F4F2; border:1px solid #CCCCCC; border-radius:12px; padding:34px 34px 30px; box-shadow:5px 5px 0 #BBBBBB;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+          <div>
+            <div style="font-family:'Playfair Display',Georgia,serif; font-size:20px; font-weight:600; color:#111111;">新建分组</div>
+          </div>
+          <div style="width:32px; height:32px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#777777; background:#E2E2E2; cursor:pointer;"><svg width="12" height="12" viewBox="0 0 12 12" stroke="currentColor" stroke-width="2"><path d="M2 2l8 8M10 2l-8 8"/></svg></div>
+        </div>
+
+        <div class="sa-field" style="margin-bottom:26px;">
+          <label class="sa-label">分组名称</label>
+          <input class="sa-field-input" value="阅读收藏" readonly style="border-color:#111111; box-shadow:2px 2px 0 #999999;">
+          <div style="display:flex; justify-content:flex-end; margin-top:6px;">
+            <span style="font-size:10px; color:#999999; font-family:'Space Mono',monospace;">4 / 40</span>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:10px; justify-content:flex-end;">
+          <button class="btn-ghost">取消</button>
+          <button class="btn-primary">创建分组</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1056,7 +1136,7 @@ body { background: #111; font-family: sans-serif; }
 <script>
 // E-ink dithering texture: scattered dark microdots on cool gray ground
 (function() {
-  const ids = ['grain-login','grain-empty','grain-main','grain-search','grain-hover','grain-add','grain-add2','grain-edit','grain-rename','grain-delete','grain-newgroup','grain-drag','grain-noresult','grain-nofavicon'];
+  const ids = ['grain-login','grain-empty','grain-empty-newgroup','grain-main','grain-search','grain-hover','grain-add','grain-add2','grain-edit','grain-rename','grain-delete','grain-newgroup','grain-drag','grain-noresult','grain-nofavicon'];
   const canvas = document.createElement('canvas');
   const size = 256; canvas.width = size; canvas.height = size;
   const ctx = canvas.getContext('2d');

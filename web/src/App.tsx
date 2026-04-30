@@ -3,9 +3,11 @@ import { useBookmarks } from './hooks/useBookmarks'
 import { LoginPage } from './components/LoginPage'
 import { SearchBar } from './components/SearchBar'
 import { BookmarkGrid } from './components/BookmarkGrid'
+import { GroupModal } from './components/GroupModal'
 
 export function App() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [groupModalOpen, setGroupModalOpen] = useState(false)
   const store = useBookmarks()
 
   function handleEnter(query: string) {
@@ -81,7 +83,7 @@ export function App() {
 
       {/* Main content */}
       {data.groups.length === 0 && !searchQuery ? (
-        <EmptyState onAddGroup={store.addGroup} />
+        <EmptyState onAddGroup={() => setGroupModalOpen(true)} />
       ) : (
         <BookmarkGrid
           data={data}
@@ -98,16 +100,18 @@ export function App() {
           onApplyDrag={store.applyDragData}
         />
       )}
+
+      {groupModalOpen && (
+        <GroupModal
+          onSave={store.addGroup}
+          onClose={() => setGroupModalOpen(false)}
+        />
+      )}
     </div>
   )
 }
 
-function EmptyState({ onAddGroup }: { onAddGroup: (name: string) => void }) {
-  function handleAdd() {
-    const name = prompt('分组名称')
-    if (name?.trim()) onAddGroup(name.trim())
-  }
-
+function EmptyState({ onAddGroup }: { onAddGroup: () => void }) {
   return (
     <div className="flex flex-col items-center justify-center py-24">
       <svg width="80" height="80" viewBox="0 0 80 80" fill="none" className="mb-6 opacity-30">
@@ -122,7 +126,7 @@ function EmptyState({ onAddGroup }: { onAddGroup: (name: string) => void }) {
         创建第一个分组，然后开始添加常用网站
       </p>
       <button
-        onClick={handleAdd}
+        onClick={onAddGroup}
         className="flex items-center gap-2 px-5 py-2.5 bg-ink text-paper rounded-[7px]
           font-body text-sm font-medium hover:bg-ink-dark transition-colors"
       >

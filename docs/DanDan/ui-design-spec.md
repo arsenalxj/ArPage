@@ -140,12 +140,12 @@ Base unit: **8px**
 | Card | Bookmark Card, Ghost Add Card | Rest, Hover, Drag | Hover 升为 `#111` 边框 + level-2 阴影；Ghost 用虚线边框 |
 | Favicon | Text Abbr | — | 26×26px，灰阶背景（`#111`–`#555`），白色文字 |
 | Dropdown | Context Menu | Rest, Item Hover | `3px 3px 0 #BBBBBB`；条目 hover 背景 `#E2E2E2` |
-| Modal | Add/Edit Bookmark | Open (with overlay) | `5px 5px 0 #BBBBBB`；遮罩 `rgba(0,0,0,0.5)` |
+| Modal | Add/Edit Bookmark, Create Group | Open (with overlay) | `5px 5px 0 #BBBBBB`；遮罩 `rgba(0,0,0,0.5)` |
 | Group Header | Default, Collapsed | Rest, Hover action | 折叠态 border-bottom 改虚线，name 降透明度到 50% |
 | Pinned Section | — | Empty (hidden), Populated | 背景 `#E2E2E2`，与卡片区形成灰度层差 |
 | Search Bar | — | Empty, Focused, Filtering | 宽 660px 居中；Filtering 态显示匹配文字高亮（`rgba(0,0,0,0.1)` 底） |
 | Kbd Hint | — | — | `background:#E2E2E2; border:1px solid #AAAAAA; border-radius:4px` |
-| Inline Input | Group Rename, New Group | Editing | 复用 `.sa-field-input` 样式，内联替换对应文字节点 |
+| Inline Input | Group Rename | Editing | 复用 `.sa-field-input` 样式，内联替换对应文字节点；新建分组不使用内联输入 |
 | Delete Confirm | — | — | 弹窗内红色警示文字为深灰 `#444`，按钮仍为黑色 Primary |
 
 ---
@@ -250,6 +250,13 @@ Base unit: **8px**
 **Group Header:** `border-bottom 1px solid #BBBBBB`
 - Collapsed: `border-bottom-style dashed; .sa-group-name opacity 0.5`
 - Rename: 名称节点替换为内联 input，同 `.sa-field-input` 样式
+
+**Create Group Modal:** 宽 `420px`，背景 `#F4F4F2`，边框 `1px solid #CCCCCC`，圆角 `12px`，padding `34px 34px 30px`，阴影 `5px 5px 0 #BBBBBB`。
+- Header: 标题为 `20px Playfair Display 600`，不显示副文案。
+- Input: 使用 `.sa-field-input`，聚焦时 `border-color #111111` + `2px 2px 0 #999999`。
+- Helper: 右侧用 `Space Mono 10px #999999` 显示字数计数，不显示额外说明文案。
+- Actions: 右下角并排 `取消` Ghost 按钮和 `创建分组` Primary 按钮。
+- Usage: 空状态和已有分组页面都使用该 Modal；不调用系统 prompt，不再使用底部内联输入创建分组。
 
 **Search Bar:** `border 1.5px solid #AAAAAA; box-shadow 1px 1px 0 #CCCCCC`
 - Focused: `border-color #111111; box-shadow 2px 2px 0 #999999`

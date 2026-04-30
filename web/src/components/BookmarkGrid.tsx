@@ -12,6 +12,7 @@ import { groupBookmarks, pinnedBookmarks, sortedGroups } from '../hooks/useBookm
 import { BookmarkCard, BookmarkCardWrapper } from './BookmarkCard'
 import { BookmarkGroup } from './BookmarkGroup'
 import { BookmarkModal } from './BookmarkModal'
+import { GroupModal } from './GroupModal'
 
 interface Props {
   data: AppData
@@ -52,8 +53,7 @@ export function BookmarkGrid({
   const [modal, setModal] = useState<ModalState>({ open: false, bookmark: null })
   const [activeId, setActiveId] = useState<string | null>(null)
   const overGroupId = useRef<string | null>(null)
-  const [newGroupInput, setNewGroupInput] = useState(false)
-  const [newGroupName, setNewGroupName] = useState('')
+  const [groupModalOpen, setGroupModalOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
 
   const sensors = useSensors(
@@ -207,15 +207,6 @@ export function BookmarkGrid({
   // Active dragged item for overlay
   const activeBm = activeId ? data.bookmarks.find(b => b.id === activeId) : null
 
-  // ─── New group input ──────────────────────────────────────────────────
-
-  function commitNewGroup() {
-    const v = newGroupName.trim()
-    if (v) onAddGroup(v)
-    setNewGroupName('')
-    setNewGroupInput(false)
-  }
-
   // ─── Render ───────────────────────────────────────────────────────────
 
   if (isFiltering) {
@@ -334,35 +325,15 @@ export function BookmarkGrid({
           </SortableContext>
 
           {/* New group */}
-          {newGroupInput ? (
-            <div className="flex items-center gap-2 mt-1">
-              <input
-                autoFocus
-                value={newGroupName}
-                onChange={e => setNewGroupName(e.target.value)}
-                onKeyDown={e => {
-                  if (e.key === 'Enter') commitNewGroup()
-                  if (e.key === 'Escape') { setNewGroupName(''); setNewGroupInput(false) }
-                }}
-                onBlur={commitNewGroup}
-                placeholder="分组名称"
-                maxLength={40}
-                className="h-9 px-3 rounded-[7px] border border-ink bg-paper font-body text-sm text-ink
-                  outline-none shadow-ink-2f"
-              />
-              <span className="text-[11px] text-ink-muted font-body italic">Enter 确认，Esc 取消</span>
-            </div>
-          ) : (
-            <button
-              onClick={() => setNewGroupInput(true)}
-              className="inline-flex items-center gap-2 mt-1 px-4 py-2 border-2 border-dashed
-                border-border-default rounded-md text-ink-muted text-xs font-body
-                hover:border-ink hover:text-ink transition-colors"
-            >
-              <PlusIcon />
-              新建分组
-            </button>
-          )}
+          <button
+            onClick={() => setGroupModalOpen(true)}
+            className="inline-flex items-center gap-2 mt-1 px-4 py-2 border-2 border-dashed
+              border-border-default rounded-md text-ink-muted text-xs font-body
+              hover:border-ink hover:text-ink transition-colors"
+          >
+            <PlusIcon />
+            新建分组
+          </button>
         </div>
 
         {/* Drag overlay */}
@@ -403,6 +374,13 @@ export function BookmarkGrid({
           groups={data.groups}
           onSave={handleSave}
           onClose={() => setModal({ open: false, bookmark: null })}
+        />
+      )}
+
+      {groupModalOpen && (
+        <GroupModal
+          onSave={onAddGroup}
+          onClose={() => setGroupModalOpen(false)}
         />
       )}
     </>
