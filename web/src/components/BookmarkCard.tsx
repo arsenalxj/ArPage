@@ -147,8 +147,20 @@ interface DropdownProps {
 }
 
 function DropdownMenu({ bookmark, onEdit, onDelete, onTogglePin, onClose }: DropdownProps) {
+  const [copyStatus, setCopyStatus] = useState<'idle' | 'copied' | 'failed'>('idle')
   // Close on outside click
   const ref = useRef<HTMLDivElement>(null)
+
+  async function handleCopy() {
+    const copied = await copyToClipboard(bookmark.url)
+    if (!copied) {
+      setCopyStatus('failed')
+      return
+    }
+
+    setCopyStatus('copied')
+    window.setTimeout(onClose, 500)
+  }
 
   return (
     <>
@@ -161,6 +173,10 @@ function DropdownMenu({ bookmark, onEdit, onDelete, onTogglePin, onClose }: Drop
         <button onClick={onTogglePin} className={menuItemCls}>
           <PinIcon />
           {bookmark.pinned ? '取消置顶' : '置顶'}
+        </button>
+        <button onClick={handleCopy} className={menuItemCls}>
+          <CopyIcon />
+          {copyStatus === 'copied' ? '已复制' : copyStatus === 'failed' ? '复制失败' : '复制链接'}
         </button>
         <button onClick={onEdit} className={menuItemCls}>
           <EditIcon />
@@ -213,6 +229,32 @@ function googleS2FaviconUrl(rawUrl: string): string | null {
   }
 }
 
+async function copyToClipboard(text: string): Promise<boolean> {
+  if (navigator.clipboard?.writeText) {
+    try {
+      await navigator.clipboard.writeText(text)
+      return true
+    } catch {
+      // Fall back to the legacy path below.
+    }
+  }
+
+  const textarea = document.createElement('textarea')
+  textarea.value = text
+  textarea.setAttribute('readonly', '')
+  textarea.style.position = 'fixed'
+  textarea.style.top = '-9999px'
+  textarea.style.left = '-9999px'
+  document.body.appendChild(textarea)
+  textarea.select()
+
+  try {
+    return document.execCommand('copy')
+  } finally {
+    document.body.removeChild(textarea)
+  }
+}
+
 function PinIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -225,6 +267,15 @@ function EditIcon() {
   return (
     <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.5">
       <path d="M9.5 1.5l2 2L4 11H2V9L9.5 1.5z" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+function CopyIcon() {
+  return (
+    <svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <rect x="4" y="3" width="6.5" height="8" rx="1" strokeLinejoin="round" />
+      <path d="M2.5 9V2.5a1 1 0 011-1H8" strokeLinejoin="round" />
     </svg>
   )
 }
