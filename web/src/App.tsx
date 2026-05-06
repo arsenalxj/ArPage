@@ -4,6 +4,7 @@ import { LoginPage } from './components/LoginPage'
 import { SearchBar } from './components/SearchBar'
 import { BookmarkGrid } from './components/BookmarkGrid'
 import { GroupModal } from './components/GroupModal'
+import { PomodoroTimer } from './components/PomodoroTimer'
 
 export function App() {
   const [searchQuery, setSearchQuery] = useState('')
@@ -144,6 +145,8 @@ export function App() {
           onClose={() => setGroupModalOpen(false)}
         />
       )}
+
+      <PomodoroTimer />
     </div>
   )
 }

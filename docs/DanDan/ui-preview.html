@@ -196,6 +196,50 @@ body { background: #111; font-family: sans-serif; }
 .sa-field-input::placeholder { color: #AAAAAA; }
 .sa-field-input:focus { border-color: #111111; box-shadow: 2px 2px 0 #999999; }
 .sa-field-select { width: 100%; height: 44px; border: 1.5px solid #AAAAAA; border-radius: 7px; background: #F4F4F2; padding: 0 14px; font-family: 'Lora', Georgia, serif; font-size: 14px; color: #111111; outline: none; appearance: none; }
+
+/* ── pomodoro timer ── */
+.pomo-showcase-label { font-family:'Space Mono',monospace; font-size:9px; letter-spacing:1.5px; text-transform:uppercase; color:#555; margin-bottom:12px; text-align:center; }
+.pomo { width:220px; background:#F4F4F2; border:1px solid #CCCCCC; border-radius:12px; box-shadow:3px 3px 0 #BBBBBB; }
+.pomo-header { display:flex; align-items:center; gap:8px; padding:12px 14px 10px; border-bottom:1px solid #DDDDDD; }
+.pomo-header-icon { color:#555555; flex-shrink:0; }
+.pomo-header-icon svg { width:16px; height:16px; display:block; }
+.pomo-header-title { font-family:'Lora',Georgia,serif; font-size:14px; font-weight:500; color:#111111; flex:1; }
+.pomo-header-btn { width:28px; height:28px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#888888; cursor:pointer; flex-shrink:0; }
+.pomo-header-btn:hover { background:rgba(0,0,0,0.06); }
+.pomo-body { padding:16px 14px 14px; }
+.pomo-tabs { display:flex; gap:6px; margin-bottom:16px; }
+.pomo-tab { flex:1; height:30px; border-radius:5px; display:flex; align-items:center; justify-content:center; font-family:'Lora',Georgia,serif; font-size:12px; cursor:pointer; border:none; background:transparent; }
+.pomo-tab.active { background:#111111; color:#E8E8E5; font-weight:500; }
+.pomo-tab:not(.active) { color:#777777; }
+.pomo-tab:not(.active):hover { color:#333333; }
+.pomo-tab.disabled { opacity:0.4; pointer-events:none; }
+.pomo-time { font-family:'Space Mono',monospace; font-size:32px; font-weight:700; color:#111111; text-align:center; letter-spacing:2px; padding:10px 0 4px; cursor:pointer; }
+.pomo-time.no-edit { cursor:default; }
+.pomo-time.paused { opacity:0.5; }
+.pomo-hint { font-family:'Lora',Georgia,serif; font-size:11px; color:#999999; text-align:center; margin-bottom:16px; font-style:italic; }
+.pomo-status { font-family:'Space Mono',monospace; font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#999999; text-align:center; margin-bottom:16px; }
+.pomo-controls { display:flex; gap:8px; justify-content:center; align-items:center; }
+.pomo-btn-primary { height:34px; padding:0 20px; background:#111111; color:#E8E8E5; border-radius:7px; border:none; font-family:'Lora',Georgia,serif; font-size:13px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:6px; }
+.pomo-btn-primary:hover { background:#2A2A2A; }
+.pomo-btn-primary.disabled { opacity:0.4; pointer-events:none; }
+.pomo-btn-ghost { height:34px; padding:0 16px; background:transparent; color:#555555; border:1.5px solid #CCCCCC; border-radius:7px; font-family:'Lora',Georgia,serif; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:6px; }
+.pomo-btn-ghost:hover { border-color:#888888; color:#333333; }
+.pomo-btn-reset { width:34px; height:34px; border-radius:7px; display:flex; align-items:center; justify-content:center; color:#777777; cursor:pointer; background:transparent; border:none; }
+.pomo-btn-reset:hover { background:rgba(0,0,0,0.06); }
+
+/* collapsed */
+.pomo-collapsed { min-width:180px; background:#F4F4F2; border:1px solid #CCCCCC; border-radius:12px; box-shadow:3px 3px 0 #BBBBBB; padding:0 14px; height:40px; display:inline-flex; align-items:center; gap:10px; }
+.pomo-collapsed-icon { color:#555555; flex-shrink:0; }
+.pomo-collapsed-icon svg { width:14px; height:14px; display:block; }
+.pomo-collapsed-time { font-family:'Space Mono',monospace; font-size:14px; font-weight:700; color:#111111; letter-spacing:1px; }
+.pomo-collapsed-mode { font-family:'Lora',Georgia,serif; font-size:11px; color:#777777; }
+.pomo-collapsed-expand { width:28px; height:28px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#888888; cursor:pointer; margin-left:auto; flex-shrink:0; }
+.pomo-collapsed-expand:hover { background:rgba(0,0,0,0.06); }
+
+/* edit input */
+.pomo-edit-wrap { display:flex; align-items:center; justify-content:center; gap:6px; padding:10px 0 4px; }
+.pomo-edit-input { width:64px; height:40px; border:1.5px solid #111111; border-radius:7px; background:#F4F4F2; font-family:'Space Mono',monospace; font-size:24px; font-weight:700; color:#111111; text-align:center; outline:none; box-shadow:2px 2px 0 #999999; }
+.pomo-edit-unit { font-family:'Lora',Georgia,serif; font-size:13px; color:#777777; }
 </style>
 </head>
 <body>
@@ -217,6 +261,9 @@ body { background: #111; font-family: sans-serif; }
     <a href="#s-drag">拖拽中</a>
     <a href="#s-noresult">搜索无结果</a>
     <a href="#s-nofavicon">无图标</a>
+    <a href="#s-pomo">番茄钟展开</a>
+    <a href="#s-pomo-collapsed">番茄钟收起</a>
+    <a href="#s-pomo-context">页面定位</a>
   </div>
 </div>
 
@@ -1141,12 +1188,300 @@ body { background: #111; font-family: sans-serif; }
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════
+     STATE: 番茄钟 · 展开态
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-pomo">
+  <div class="state-label">番茄钟 · 展开态 &nbsp;·&nbsp; 空闲 / 倒计时 / 暂停 / 编辑时长 / 休息模式</div>
+  <div style="max-width:1280px; margin:0 auto; display:flex; flex-wrap:wrap; gap:40px; justify-content:center; padding:0 24px;">
+
+    <!-- 1. Idle · Focus -->
+    <div>
+      <div class="pomo-showcase-label">空闲 · 专注</div>
+      <div class="pomo">
+        <div class="pomo-header">
+          <div class="pomo-header-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="9" r="5"/><path d="M8 6.5v3l2 1"/><path d="M5 2.5l-1 1"/><path d="M11 2.5l1 1"/><path d="M8 4V2.5"/></svg></div>
+          <div class="pomo-header-title">番茄钟</div>
+          <div class="pomo-header-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h6"/></svg></div>
+        </div>
+        <div class="pomo-body">
+          <div class="pomo-tabs">
+            <div class="pomo-tab active">专注</div>
+            <div class="pomo-tab">休息</div>
+          </div>
+          <div class="pomo-time">25:00</div>
+          <div class="pomo-hint">点击数字编辑时长</div>
+          <div class="pomo-controls">
+            <button class="pomo-btn-primary">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M2.5 1.5l6 3.5-6 3.5z"/></svg>
+              开始
+            </button>
+            <button class="pomo-btn-reset">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a4 4 0 107-3"/><path d="M3 3v4h4"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Running · Focus -->
+    <div>
+      <div class="pomo-showcase-label">倒计时中 · 专注</div>
+      <div class="pomo">
+        <div class="pomo-header">
+          <div class="pomo-header-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="9" r="5"/><path d="M8 6.5v3l2 1"/><path d="M5 2.5l-1 1"/><path d="M11 2.5l1 1"/><path d="M8 4V2.5"/></svg></div>
+          <div class="pomo-header-title">番茄钟</div>
+          <div class="pomo-header-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h6"/></svg></div>
+        </div>
+        <div class="pomo-body">
+          <div class="pomo-tabs">
+            <div class="pomo-tab active disabled">专注</div>
+            <div class="pomo-tab disabled">休息</div>
+          </div>
+          <div class="pomo-time no-edit">18:42</div>
+          <div class="pomo-status">倒计时中</div>
+          <div class="pomo-controls">
+            <button class="pomo-btn-ghost">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><rect x="1.5" y="1" width="2.5" height="8" rx="0.5"/><rect x="6" y="1" width="2.5" height="8" rx="0.5"/></svg>
+              暂停
+            </button>
+            <button class="pomo-btn-reset">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a4 4 0 107-3"/><path d="M3 3v4h4"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Paused · Focus -->
+    <div>
+      <div class="pomo-showcase-label">已暂停 · 专注</div>
+      <div class="pomo">
+        <div class="pomo-header">
+          <div class="pomo-header-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="9" r="5"/><path d="M8 6.5v3l2 1"/><path d="M5 2.5l-1 1"/><path d="M11 2.5l1 1"/><path d="M8 4V2.5"/></svg></div>
+          <div class="pomo-header-title">番茄钟</div>
+          <div class="pomo-header-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h6"/></svg></div>
+        </div>
+        <div class="pomo-body">
+          <div class="pomo-tabs">
+            <div class="pomo-tab active disabled">专注</div>
+            <div class="pomo-tab disabled">休息</div>
+          </div>
+          <div class="pomo-time paused">18:42</div>
+          <div class="pomo-status">已暂停</div>
+          <div class="pomo-controls">
+            <button class="pomo-btn-primary">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M2.5 1.5l6 3.5-6 3.5z"/></svg>
+              继续
+            </button>
+            <button class="pomo-btn-reset">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a4 4 0 107-3"/><path d="M3 3v4h4"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 4. Editing duration -->
+    <div>
+      <div class="pomo-showcase-label">编辑时长 · 专注</div>
+      <div class="pomo">
+        <div class="pomo-header">
+          <div class="pomo-header-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="9" r="5"/><path d="M8 6.5v3l2 1"/><path d="M5 2.5l-1 1"/><path d="M11 2.5l1 1"/><path d="M8 4V2.5"/></svg></div>
+          <div class="pomo-header-title">番茄钟</div>
+          <div class="pomo-header-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h6"/></svg></div>
+        </div>
+        <div class="pomo-body">
+          <div class="pomo-tabs">
+            <div class="pomo-tab active">专注</div>
+            <div class="pomo-tab">休息</div>
+          </div>
+          <div class="pomo-edit-wrap">
+            <input class="pomo-edit-input" value="30" readonly>
+            <span class="pomo-edit-unit">分钟</span>
+          </div>
+          <div class="pomo-hint">Enter 确认 · Esc 取消</div>
+          <div class="pomo-controls">
+            <button class="pomo-btn-primary disabled">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M2.5 1.5l6 3.5-6 3.5z"/></svg>
+              开始
+            </button>
+            <button class="pomo-btn-reset">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a4 4 0 107-3"/><path d="M3 3v4h4"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. Idle · Rest mode -->
+    <div>
+      <div class="pomo-showcase-label">空闲 · 休息</div>
+      <div class="pomo">
+        <div class="pomo-header">
+          <div class="pomo-header-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="9" r="5"/><path d="M8 6.5v3l2 1"/><path d="M5 2.5l-1 1"/><path d="M11 2.5l1 1"/><path d="M8 4V2.5"/></svg></div>
+          <div class="pomo-header-title">番茄钟</div>
+          <div class="pomo-header-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h6"/></svg></div>
+        </div>
+        <div class="pomo-body">
+          <div class="pomo-tabs">
+            <div class="pomo-tab">专注</div>
+            <div class="pomo-tab active">休息</div>
+          </div>
+          <div class="pomo-time">05:00</div>
+          <div class="pomo-hint">点击数字编辑时长</div>
+          <div class="pomo-controls">
+            <button class="pomo-btn-primary">
+              <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M2.5 1.5l6 3.5-6 3.5z"/></svg>
+              开始
+            </button>
+            <button class="pomo-btn-reset">
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a4 4 0 107-3"/><path d="M3 3v4h4"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 番茄钟 · 收起态
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-pomo-collapsed">
+  <div class="state-label">番茄钟 · 收起态 &nbsp;·&nbsp; 空闲 / 倒计时中</div>
+  <div style="max-width:1280px; margin:0 auto; display:flex; flex-wrap:wrap; gap:40px; justify-content:center; align-items:center; padding:0 24px;">
+
+    <!-- Collapsed idle -->
+    <div>
+      <div class="pomo-showcase-label">收起 · 空闲</div>
+      <div class="pomo-collapsed">
+        <div class="pomo-collapsed-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="9" r="5"/><path d="M8 6.5v3l2 1"/><path d="M5 2.5l-1 1"/><path d="M11 2.5l1 1"/><path d="M8 4V2.5"/></svg></div>
+        <span class="pomo-collapsed-time">25:00</span>
+        <span class="pomo-collapsed-mode">专注</span>
+        <div class="pomo-collapsed-expand"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="7" height="7" rx="1.5"/></svg></div>
+      </div>
+    </div>
+
+    <!-- Collapsed running -->
+    <div>
+      <div class="pomo-showcase-label">收起 · 倒计时中</div>
+      <div class="pomo-collapsed">
+        <div class="pomo-collapsed-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="9" r="5"/><path d="M8 6.5v3l2 1"/><path d="M5 2.5l-1 1"/><path d="M11 2.5l1 1"/><path d="M8 4V2.5"/></svg></div>
+        <span class="pomo-collapsed-time">18:42</span>
+        <span class="pomo-collapsed-mode">专注</span>
+        <div class="pomo-collapsed-expand"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="7" height="7" rx="1.5"/></svg></div>
+      </div>
+    </div>
+
+    <!-- Collapsed rest -->
+    <div>
+      <div class="pomo-showcase-label">收起 · 休息</div>
+      <div class="pomo-collapsed">
+        <div class="pomo-collapsed-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="9" r="5"/><path d="M8 6.5v3l2 1"/><path d="M5 2.5l-1 1"/><path d="M11 2.5l1 1"/><path d="M8 4V2.5"/></svg></div>
+        <span class="pomo-collapsed-time">05:00</span>
+        <span class="pomo-collapsed-mode">休息</span>
+        <div class="pomo-collapsed-expand"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2.5" y="2.5" width="7" height="7" rx="1.5"/></svg></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 番茄钟 · 页面定位
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-pomo-context">
+  <div class="state-label">番茄钟 · 页面定位 &nbsp;·&nbsp; 悬浮在主页右下角</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:520px; position:relative;">
+      <div class="sa-grain" id="grain-pomo-ctx"></div>
+
+      <div class="sa-topbar">
+        <div class="sa-logo">Ar<em>Page</em></div>
+        <div class="sa-topbar-meta">
+          <span class="sa-topbar-chip">IP: 188.253.121.62</span>
+          <span class="sa-topbar-time">14:32:08</span>
+        </div>
+        <div class="sa-topbar-right">
+          <div class="sa-icon-btn" title="Logout"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"/></svg></div>
+        </div>
+      </div>
+
+      <div class="sa-search-bar">
+        <div class="sa-search-wrap">
+          <div class="sa-search-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l3.5 3.5"/></svg></div>
+          <input class="sa-search-input" placeholder="搜索书签，或按 Enter 跳转 Google…" readonly>
+          <div class="sa-search-hint"><span class="sa-kbd">/</span></div>
+        </div>
+      </div>
+
+      <div class="sa-content" style="opacity:0.35;">
+        <div class="sa-pinned">
+          <div class="sa-pinned-header">
+            <span class="sa-pin-icon"><svg viewBox="0 0 12 12" fill="currentColor" width="12" height="12"><path d="M8.5 1L10 2.5 8 5l.8.8.4 2L7 9 5.5 7.5 3 9.5l.4-2L2.5 6.5 4 5 2 2.5 3.5 1l2 2L8 1.5z"/></svg></span>
+            <span class="sa-pin-label">置顶</span>
+          </div>
+          <div class="bm-grid">
+            <div class="sa-bm-card"><div class="fav fa-gh">GH</div><div><div class="sa-bm-title">GitHub</div><div class="sa-bm-domain">github.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-cl">AI</div><div><div class="sa-bm-title">Claude</div><div class="sa-bm-domain">claude.ai</div></div></div>
+          </div>
+        </div>
+        <div class="sa-group">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+            <span class="sa-group-name">开发工具</span>
+            <div class="sa-group-meta"><span class="sa-group-count">5 个书签</span></div>
+          </div>
+          <div class="bm-grid">
+            <div class="sa-bm-card"><div class="fav fa-vr">▲</div><div><div class="sa-bm-title">Vercel</div><div class="sa-bm-domain">vercel.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-cf">CF</div><div><div class="sa-bm-title">Cloudflare</div><div class="sa-bm-domain">dash.cloudflare.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-npm">npm</div><div><div class="sa-bm-title">npm</div><div class="sa-bm-domain">npmjs.com</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Timer floating bottom-right -->
+      <div style="position:absolute; bottom:24px; right:24px; z-index:40;">
+        <div class="pomo">
+          <div class="pomo-header">
+            <div class="pomo-header-icon"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="9" r="5"/><path d="M8 6.5v3l2 1"/><path d="M5 2.5l-1 1"/><path d="M11 2.5l1 1"/><path d="M8 4V2.5"/></svg></div>
+            <div class="pomo-header-title">番茄钟</div>
+            <div class="pomo-header-btn"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 6h6"/></svg></div>
+          </div>
+          <div class="pomo-body">
+            <div class="pomo-tabs">
+              <div class="pomo-tab active">专注</div>
+              <div class="pomo-tab">休息</div>
+            </div>
+            <div class="pomo-time no-edit">18:42</div>
+            <div class="pomo-status">倒计时中</div>
+            <div class="pomo-controls">
+              <button class="pomo-btn-ghost">
+                <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><rect x="1.5" y="1" width="2.5" height="8" rx="0.5"/><rect x="6" y="1" width="2.5" height="8" rx="0.5"/></svg>
+                暂停
+              </button>
+              <button class="pomo-btn-reset">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a4 4 0 107-3"/><path d="M3 3v4h4"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <div style="height:60px; background:#111;"></div>
 
 <script>
 // E-ink dithering texture: scattered dark microdots on cool gray ground
 (function() {
-  const ids = ['grain-login','grain-empty','grain-empty-newgroup','grain-main','grain-search','grain-hover','grain-add','grain-add2','grain-edit','grain-rename','grain-delete','grain-newgroup','grain-drag','grain-noresult','grain-nofavicon'];
+  const ids = ['grain-login','grain-empty','grain-empty-newgroup','grain-main','grain-search','grain-hover','grain-add','grain-add2','grain-edit','grain-rename','grain-delete','grain-newgroup','grain-drag','grain-noresult','grain-nofavicon','grain-pomo-ctx'];
   const canvas = document.createElement('canvas');
   const size = 256; canvas.width = size; canvas.height = size;
   const ctx = canvas.getContext('2d');

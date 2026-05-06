@@ -148,6 +148,7 @@ Base unit: **8px**
 | Inline Input | Group Rename | Editing | 复用 `.sa-field-input` 样式，内联替换对应文字节点；新建分组不使用内联输入 |
 | Topbar Meta | IP Chip, Time | — | Topbar 中部，`ml-auto` 推至右侧。IP chip：`height 24px; padding 0 9px; border 1px solid #CCCCCC; border-radius 5px; background #E2E2E2`；IP 获取失败时不渲染。时间：`Space Mono 10px #777777`，始终显示，每秒刷新。 |
 | Delete Confirm | — | — | 弹窗内红色警示文字为深灰 `#444`，按钮仍为黑色 Primary |
+| Pomodoro Timer | Expanded, Collapsed | Idle, Running, Paused, Editing | 悬浮右下角 `fixed bottom:24 right:24 z-40`；展开宽 `220px`，level-3 阴影；收起为单行 `40px` 高 |
 
 ---
 
@@ -206,6 +207,27 @@ Base unit: **8px**
 └──────────────────────────────────┘
 ```
 
+### 4. Floating Panel（悬浮面板）
+
+辅助工具（如番茄钟）悬浮在页面右下角，不随页面滚动，不遮挡 Modal。
+
+```
+┌──────────────────────────────────┐
+│  [Logo]  [meta]          [icns]  │
+├──────────────────────────────────┤
+│         [   Search Bar   ]       │
+├──────────────────────────────────┤
+│  [Content area...]               │
+│                                  │
+│                    ┌──────────┐  │
+│                    │ Floating │  │
+│                    │  Panel   │  │
+│                    └──────────┘  │
+└──────────────────────────────────┘
+         position: fixed; bottom: 24px; right: 24px; z-index: 40
+         小屏: right: 12px; bottom: 12px; max-width: calc(100vw - 24px)
+```
+
 ---
 
 ## Interaction and Animation
@@ -222,6 +244,8 @@ Base unit: **8px**
 | 分组折叠 | 内容 height collapse | 200ms | ease-in-out | 折叠后 header 切虚线边框 |
 | 拖拽提起 | shadow 升至 level 4，卡片保持固定宽高 | 100ms | ease | 不旋转、不缩放，避免拖动时 UI 变形或位置偏移 |
 | 页面进入 | fade + slide up 12px | 300ms | ease-out | 首次加载 |
+| 番茄钟收起/展开 | height collapse/expand | 200ms | ease-in-out | 收起态保留时间和模式标签 |
+| 番茄钟暂停指示 | 时间数字 opacity 降至 0.5 | 即时 | — | 通过透明度区分 running 和 paused |
 
 ---
 
@@ -262,6 +286,19 @@ Base unit: **8px**
 **Search Bar:** `border 1.5px solid #AAAAAA; box-shadow 1px 1px 0 #CCCCCC`
 - Focused: `border-color #111111; box-shadow 2px 2px 0 #999999`
 - Filtering: 匹配词用 `rgba(0,0,0,0.1)` 底色 highlight
+
+**Pomodoro Timer — Expanded:** `width 220px; background #F4F4F2; border 1px solid #CCCCCC; border-radius 12px; box-shadow 3px 3px 0 #BBBBBB`
+- Header: 图标（`#555`）+ 标题 `Lora 14px 500` + 收起按钮 `28×28px radius-sm`，底部 `1px solid #DDDDDD` 分隔线
+- Mode tabs: 两个 `flex:1` 按钮，高 `30px`，`radius-sm 5px`。活跃态 `bg #111 color #E8E8E5 weight 500`；非活跃 `color #777`
+- Time display: `Space Mono 32px 700 color #111 letter-spacing 2px`；idle 可点击编辑；running/paused 不可编辑
+- Idle: 时间下方 `Lora 11px italic #999` 提示「点击数字编辑时长」
+- Running: 时间下方 `Space Mono 10px uppercase tracking 1.5px #999` 显示「倒计时中」；tabs 加 `disabled` 样式（`opacity 0.4`）
+- Paused: 同 Running 布局，时间数字 `opacity 0.5`，状态文字「已暂停」
+- Editing: 时间数字替换为 inline input `64×40px; border 1.5px solid #111; shadow 2px 2px 0 #999; Space Mono 24px 700`，右侧 `Lora 13px #777`「分钟」
+- Controls: 居中排列，主按钮 `height 34px; padding 0 20px; radius 7px`（Primary 或 Ghost），重置按钮 `34×34px` 图标按钮
+
+**Pomodoro Timer — Collapsed:** `min-width 180px; height 40px; background #F4F4F2; border 1px solid #CCCCCC; border-radius 12px; box-shadow 3px 3px 0 #BBBBBB; padding 0 14px; inline-flex`
+- 内容: 图标 `14px` + 时间 `Space Mono 14px 700 #111` + 模式 `Lora 11px #777` + 展开按钮 `28×28px ml-auto`
 
 ---
 
