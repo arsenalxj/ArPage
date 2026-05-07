@@ -150,6 +150,7 @@ Base unit: **8px**
 | Recent History | History Strip, History Item | Hidden, Populated, Hover | 页面底部区域。仅在收到扩展历史数据且存在未添加 URL 时渲染；无权限、无数据、无未添加项时完全隐藏，不显示空态。 |
 | Delete Confirm | — | — | 弹窗内红色警示文字为深灰 `#444`，按钮仍为黑色 Primary |
 | Pomodoro Timer | Expanded, Collapsed | Idle, Running, Paused, Editing | 悬浮右下角 `fixed bottom:24 right:24 z-40`；展开宽 `220px`，level-3 阴影；收起为单行 `40px` 高 |
+| Weibo Hot Drawer | — | Loading, Populated, Refresh Failed, First-load Error | 左侧抽屉 `fixed left:0 top:0 h-screen z-50`；宽 `min(360px, calc(100vw-24px))`；右侧圆角 `8px`；level-3 阴影。Header 54px（火焰图标 + 标题 + 关闭按钮），榜单条目 44px 高可滚动，Footer 44px（更新时间 + 刷新按钮）。刷新失败时 footer 追加 `Lora 11px italic #444` "· 刷新失败"，按钮文字变"重试"。入口：搜索框右侧 34×34 火焰图标按钮。 |
 
 ---
 
@@ -250,6 +251,8 @@ Base unit: **8px**
 | 页面进入 | fade + slide up 12px | 300ms | ease-out | 首次加载 |
 | 番茄钟收起/展开 | height collapse/expand | 200ms | ease-in-out | 收起态保留时间和模式标签 |
 | 番茄钟暂停指示 | 时间数字 opacity 降至 0.5 | 即时 | — | 通过透明度区分 running 和 paused |
+| 热搜抽屉打开 | translateX(-100%) → translateX(0) + 遮罩淡入 | 200ms | ease-out | 遮罩 `rgba(0,0,0,0.5)` 同步淡入 |
+| 热搜抽屉关闭 | translateX(0) → translateX(-100%) + 遮罩淡出 | 200ms | ease-out | Esc / 点击遮罩 / 关闭按钮 |
 
 ---
 
@@ -311,6 +314,16 @@ Base unit: **8px**
 - Icon: 26×26px，`background #E2E2E2; border 1px solid #CCCCCC; border-radius 6px`，内部使用 13px outline 图标。
 - Text: 标题 `13px Lora 500 #111111` 单行省略；URL `11px Lora italic #777777` 单行省略。
 - Hidden: 扩展未传历史、浏览器历史权限不可用、历史为空、或所有 URL 已存在于书签中时，不渲染整个 Recent History 区域。
+
+**Weibo Hot Drawer:** `fixed left:0 top:0 h-screen z-50; width min(360px, calc(100vw-24px)); background #F4F4F2; border-right 1px solid #CCCCCC; border-radius 0 8px 8px 0; box-shadow 3px 3px 0 #BBBBBB`
+- Header: 54px 高，火焰图标（`14px #555`）+ 标题 `Playfair Display 15px 600` + 关闭按钮 `28×28px radius-sm`，底部 `1px solid #DDDDDD` 分隔线
+- Item: 44px 高，`padding 0 18px`。排名 `Space Mono 11px 700`（前 3 名 `#111`，其余 `#999`）+ 标题 `Lora 13px 500 #111` 单行省略 + 标签 `Lora 11px 500; bg #E2E2E2; padding 2px 6px; radius 4px; color #555`
+- Item hover: `background rgba(0,0,0,0.04)`
+- Footer: 44px 高，更新时间 `Space Mono 10px #999` + 刷新按钮 `Lora 12px 500 #555`，顶部 `1px solid #DDDDDD` 分隔线
+- Footer refresh failed: 更新时间后追加 `Lora 11px italic #444` " · 刷新失败"，按钮文字变"重试"
+- Loading: 居中 `Space Mono 11px #999` "加载中…"
+- First-load error: 居中 `Lora 14px #777` 错误文字 + Ghost 重试按钮
+- Entry button: 搜索框右侧，`34×34px rounded 7px; color #555; hover bg rgba(0,0,0,0.06)`，火焰 outline SVG 16px
 
 ---
 

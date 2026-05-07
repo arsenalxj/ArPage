@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useBookmarks } from './hooks/useBookmarks'
+import { formatTime } from './utils/formatTime'
 import { LoginPage } from './components/LoginPage'
 import { SearchBar } from './components/SearchBar'
 import { BookmarkGrid } from './components/BookmarkGrid'
 import { GroupModal } from './components/GroupModal'
 import { PomodoroTimer } from './components/PomodoroTimer'
+import { WeiboHotDrawer } from './components/WeiboHotDrawer'
 
 export function App() {
   const [searchQuery, setSearchQuery] = useState('')
   const [groupModalOpen, setGroupModalOpen] = useState(false)
+  const [weiboHotOpen, setWeiboHotOpen] = useState(false)
   const [visitorIp, setVisitorIp] = useState<string | null>(null)
   const [currentTime, setCurrentTime] = useState(() => formatTime(new Date()))
   const store = useBookmarks()
@@ -117,7 +120,12 @@ export function App() {
       </div>
 
       {/* Search */}
-      <SearchBar value={searchQuery} onChange={setSearchQuery} onEnter={handleEnter} />
+      <SearchBar
+        value={searchQuery}
+        onChange={setSearchQuery}
+        onEnter={handleEnter}
+        onOpenWeiboHot={() => setWeiboHotOpen(true)}
+      />
 
       {/* Main content */}
       {data.groups.length === 0 && !searchQuery ? (
@@ -147,13 +155,9 @@ export function App() {
       )}
 
       <PomodoroTimer />
+      <WeiboHotDrawer open={weiboHotOpen} onClose={() => setWeiboHotOpen(false)} />
     </div>
   )
-}
-
-function formatTime(date: Date): string {
-  const pad = (value: number) => value.toString().padStart(2, '0')
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
 }
 
 function EmptyState({ onAddGroup }: { onAddGroup: () => void }) {

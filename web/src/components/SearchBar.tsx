@@ -1,12 +1,14 @@
 import { KeyboardEvent, useEffect, useRef } from 'react'
+import { FireIcon } from './icons/FireIcon'
 
 interface Props {
   value: string
   onChange: (v: string) => void
   onEnter: (v: string) => void
+  onOpenWeiboHot: () => void
 }
 
-export function SearchBar({ value, onChange, onEnter }: Props) {
+export function SearchBar({ value, onChange, onEnter, onOpenWeiboHot }: Props) {
   const ref = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -36,38 +38,49 @@ export function SearchBar({ value, onChange, onEnter }: Props) {
 
   return (
     <div className="flex justify-center px-12 pt-6 pb-5">
-      <div className="relative w-[660px]">
-        <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-pale pointer-events-none">
-          <SearchIcon />
-        </span>
+      <div className="flex w-[710px] max-w-full items-center justify-center gap-2">
+        <div className="relative w-[660px]">
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-pale pointer-events-none">
+            <SearchIcon />
+          </span>
 
-        <input
-          ref={ref}
-          type="text"
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="搜索书签，或按 Enter 跳转 Google…"
-          className="w-full h-[50px] pl-[46px] pr-16 rounded-lg border border-border-default
-            bg-paper font-body text-[15px] text-ink shadow-ink-1 outline-none
-            focus:border-ink focus:shadow-ink-2f placeholder:text-ink-muted transition-shadow"
-        />
+          <input
+            ref={ref}
+            type="text"
+            value={value}
+            onChange={e => onChange(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="搜索书签，或按 Enter 跳转 Google…"
+            className="w-full h-[50px] pl-[46px] pr-16 rounded-lg border border-border-default
+              bg-paper font-body text-[15px] text-ink shadow-ink-1 outline-none
+              focus:border-ink focus:shadow-ink-2f placeholder:text-ink-muted transition-shadow"
+          />
 
-        <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
-          {value ? (
-            <button
-              onClick={handleEnterClick}
-              className="text-[10px] font-mono tracking-wide text-ink-pale hover:text-ink transition-colors px-1"
-            >
-              Enter ↵
-            </button>
-          ) : (
-            <kbd className="bg-paper-section border border-border-default rounded-xs px-1.5 py-0.5
-              font-mono text-[11px] text-ink-pale leading-snug">
-              /
-            </kbd>
-          )}
+          <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+            {value ? (
+              <button
+                onClick={handleEnterClick}
+                className="text-[10px] font-mono tracking-wide text-ink-pale hover:text-ink transition-colors px-1"
+              >
+                Enter ↵
+              </button>
+            ) : (
+              <kbd className="bg-paper-section border border-border-default rounded-xs px-1.5 py-0.5
+                font-mono text-[11px] text-ink-pale leading-snug">
+                /
+              </kbd>
+            )}
+          </div>
         </div>
+        <button
+          type="button"
+          onClick={onOpenWeiboHot}
+          className="flex h-[34px] w-[34px] flex-shrink-0 items-center justify-center rounded-[7px] text-ink-label hover:bg-black/[0.06] hover:text-ink"
+          aria-label="打开微博热搜"
+          title="微博热搜"
+        >
+          <FireIcon className="h-4 w-4" />
+        </button>
       </div>
     </div>
   )
