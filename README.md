@@ -11,6 +11,9 @@
 - 拖拽排序：支持组内排序、跨组移动、置顶区排序和分组排序。
 - favicon 抓取：服务端代理获取网站图标，失败时不影响保存。
 - 网站图标：提供浏览器标签页、移动端主屏和高清 PNG 图标。
+- IP 与时间：页面顶部实时显示访问者公网 IP 和当前时间。
+- 番茄钟：内置番茄钟计时器，支持自定义时长、暂停/重置和通知提醒。
+- 浏览器扩展：新标签页扩展，用 ArPage 替代默认新标签页并展示最近浏览历史，支持 Chrome 和 Firefox。
 
 ## 技术栈
 
@@ -31,6 +34,8 @@
 ├── web/src/                React 前端源码
 ├── web/public/             静态资源和网站图标
 ├── .github/workflows/      CI 与自动部署配置
+├── extension/              浏览器新标签页扩展（Chrome / Firefox）
+├── scripts/                构建与部署脚本
 ├── docs/DanDan/            功能方案和 UI 设计文档
 ├── wrangler.toml           Cloudflare 配置
 └── package.json            根项目脚本
@@ -130,6 +135,9 @@ npm run deploy
 - 功能方案：`docs/DanDan/plan_bookmark_nav.md`
 - CI 与自动部署方案：`docs/DanDan/plan_github_actions_ci_deploy.md`
 - UI 规范：`docs/DanDan/ui-design-spec.md`
+- 顶部 IP 与时间方案：`docs/DanDan/plan_show_ip.md`
+- 番茄钟方案：`docs/DanDan/plan_pomodoro_timer.md`
+- 新标签页扩展方案：`docs/DanDan/plan_browser_extension_newtab_history.md`
 - UI 预览：`docs/DanDan/ui-preview.html`
 
 ## 注意事项

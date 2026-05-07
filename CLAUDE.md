@@ -10,6 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 功能方案：`docs/DanDan/plan_bookmark_nav.md`
 - CI 与自动部署方案：`docs/DanDan/plan_github_actions_ci_deploy.md`
 - 顶部 IP 与时间方案：`docs/DanDan/plan_show_ip.md`
+- 番茄钟方案：`docs/DanDan/plan_pomodoro_timer.md`
+- 新标签页扩展方案：`docs/DanDan/plan_browser_extension_newtab_history.md`
 - UI 规范：`docs/DanDan/ui-design-spec.md`
 - UI 效果图：`docs/DanDan/ui-preview.html`
 
@@ -30,11 +32,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │   │   ├── BookmarkGrid.tsx   置顶区 + 分组列表
 │   │   ├── BookmarkGroup.tsx  单个分组
 │   │   ├── BookmarkCard.tsx   单个书签卡片
-│   │   └── BookmarkModal.tsx  新增/编辑弹窗
+│   │   ├── BookmarkModal.tsx  新增/编辑弹窗
+│   │   ├── PomodoroTimer.tsx  番茄钟计时器
+│   │   └── RecentHistory.tsx  最近浏览历史（扩展用）
 │   ├── hooks/
 │   │   └── useBookmarks.ts    数据获取与乐观更新
 │   └── App.tsx
 ├── web/public/             静态资源和网站图标
+├── extension/              浏览器新标签页扩展（Chrome / Firefox）
+├── scripts/                构建与部署脚本
 ├── .github/workflows/      GitHub Actions CI 与自动部署
 ├── wrangler.toml
 └── package.json            monorepo 根配置
