@@ -153,6 +153,27 @@ body { background: #111; font-family: sans-serif; }
 .sa-add-group { display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; border: 1.5px dashed #AAAAAA; border-radius: 6px; font-family: 'Lora', Georgia, serif; font-size: 12px; color: #999999; cursor: pointer; margin-top: 4px; }
 .sa-add-group:hover { border-color: #111111; color: #111111; }
 
+/* recent browser history */
+.sa-history { margin-top: 34px; padding-top: 18px; border-top: 1px solid #BBBBBB; }
+.sa-history-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.sa-history-title { display: flex; align-items: center; gap: 8px; font-family: 'Playfair Display', Georgia, serif; font-size: 13px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #111111; }
+.sa-history-title svg { width: 13px; height: 13px; color: #111111; }
+.sa-history-meta { font-family: 'Lora', Georgia, serif; font-size: 11px; font-style: italic; color: #999999; }
+.sa-history-list { display: flex; gap: 8px; flex-wrap: wrap; }
+.sa-history-item {
+  min-width: 252px; max-width: 330px; flex: 1;
+  border: 1px dashed #AAAAAA; border-radius: 7px; background: transparent;
+  padding: 11px 12px; display: flex; align-items: center; gap: 10px;
+  cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s, background 0.12s;
+}
+.sa-history-item:hover { border-color: #111111; background: #F4F4F2; box-shadow: 2px 2px 0 #AAAAAA; }
+.sa-history-icon { width: 26px; height: 26px; border-radius: 6px; background: #E2E2E2; border: 1px solid #CCCCCC; display: flex; align-items: center; justify-content: center; color: #777777; flex-shrink: 0; }
+.sa-history-body { min-width: 0; flex: 1; }
+.sa-history-name { font-family: 'Lora', Georgia, serif; font-size: 13px; font-weight: 500; color: #111111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sa-history-url { font-family: 'Lora', Georgia, serif; font-size: 11px; font-style: italic; color: #777777; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sa-history-add { width: 24px; height: 24px; border-radius: 5px; border: 1px solid #CCCCCC; background: #E2E2E2; display: flex; align-items: center; justify-content: center; color: #555555; flex-shrink: 0; }
+.sa-history-item:hover .sa-history-add { background: #111111; border-color: #111111; color: #E8E8E5; }
+
 /* add bookmark ghost card */
 .sa-bm-add {
   background: transparent; border: 1.5px dashed #AAAAAA; border-radius: 7px;
@@ -251,6 +272,7 @@ body { background: #111; font-family: sans-serif; }
     <a href="#s-login">登录页</a>
     <a href="#s-empty">空状态</a>
     <a href="#s-main">主页面</a>
+    <a href="#s-history">最近历史</a>
     <a href="#s-search">搜索过滤</a>
     <a href="#s-hover">卡片操作</a>
     <a href="#s-add">新增书签</a>
@@ -525,6 +547,162 @@ body { background: #111; font-family: sans-serif; }
           </div>
         </div>
 
+        <div class="sa-add-group">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg>
+          新建分组
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 最近浏览历史推荐
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-history">
+  <div class="state-label">最近历史 &nbsp;·&nbsp; 切回 ArPage 标签页时刷新，点击后打开新增书签弹窗</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:760px;">
+      <div class="sa-grain" id="grain-history"></div>
+
+      <div class="sa-topbar">
+        <div class="sa-logo">Ar<em>Page</em></div>
+        <div class="sa-topbar-meta">
+          <span class="sa-topbar-chip">IP: 188.253.121.62</span>
+          <span class="sa-topbar-time">14:36:51</span>
+        </div>
+        <div class="sa-topbar-right">
+          <div class="sa-icon-btn" title="Logout"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6 2H3a1 1 0 00-1 1v10a1 1 0 001 1h3M10 11l3-3-3-3M13 8H6"/></svg></div>
+        </div>
+      </div>
+
+      <div class="sa-search-bar">
+        <div class="sa-search-wrap">
+          <div class="sa-search-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l3.5 3.5"/></svg></div>
+          <input class="sa-search-input" placeholder="搜索书签，或按 Enter 跳转 Google…" readonly>
+          <div class="sa-search-hint"><span class="sa-kbd">/</span></div>
+        </div>
+      </div>
+
+      <div class="sa-content">
+        <div class="sa-group">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+            <span class="sa-group-name">开发工具</span>
+            <div class="sa-group-meta">
+              <span class="sa-group-count">5 个书签</span>
+              <div class="sa-group-actions"><span class="sa-group-action">重命名</span><span class="sa-group-action">删除</span></div>
+            </div>
+          </div>
+          <div class="bm-grid">
+            <div class="sa-bm-card"><div class="fav fa-gh">GH</div><div><div class="sa-bm-title">GitHub</div><div class="sa-bm-domain">github.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-cf">CF</div><div><div class="sa-bm-title">Cloudflare</div><div class="sa-bm-domain">dash.cloudflare.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-mdn">MD</div><div><div class="sa-bm-title">MDN Web Docs</div><div class="sa-bm-domain">developer.mozilla.org</div></div></div>
+            <div class="sa-bm-add">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
+              添加书签
+            </div>
+          </div>
+        </div>
+
+        <div class="sa-group">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+            <span class="sa-group-name">设计</span>
+            <div class="sa-group-meta"><span class="sa-group-count">3 个书签</span></div>
+          </div>
+          <div class="bm-grid">
+            <div class="sa-bm-card"><div class="fav fa-fig">FG</div><div><div class="sa-bm-title">Figma</div><div class="sa-bm-domain">figma.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-dr">Dr</div><div><div class="sa-bm-title">Dribbble</div><div class="sa-bm-domain">dribbble.com</div></div></div>
+            <div class="sa-bm-add">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
+              添加书签
+            </div>
+          </div>
+        </div>
+
+        <div class="sa-add-group">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg>
+          新建分组
+        </div>
+
+        <div class="sa-history">
+          <div class="sa-history-header">
+            <div class="sa-history-title">
+              <svg viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M6.5 2a4.5 4.5 0 104.5 4.5"/><path d="M6.5 4.2v2.6l2 1.1"/><path d="M10.7 2.2v3h-3"/></svg>
+              最近浏览
+            </div>
+            <div class="sa-history-meta">切回此标签页时刷新 · 仅显示未添加</div>
+          </div>
+          <div class="sa-history-list">
+            <div class="sa-history-item">
+              <div class="sa-history-icon"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 2h9v9H2z"/><path d="M2 5h9"/><path d="M5 5v6"/></svg></div>
+              <div class="sa-history-body">
+                <div class="sa-history-name">Chrome Extensions Manifest V3</div>
+                <div class="sa-history-url">developer.chrome.com/docs/extensions</div>
+              </div>
+              <div class="sa-history-add"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg></div>
+            </div>
+            <div class="sa-history-item" style="border-color:#111111; background:#F4F4F2; box-shadow:2px 2px 0 #AAAAAA;">
+              <div class="sa-history-icon"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h7v9H3z"/><path d="M5 4h3M5 6h3M5 8h2"/></svg></div>
+              <div class="sa-history-body">
+                <div class="sa-history-name">WebExtensions history API</div>
+                <div class="sa-history-url">developer.mozilla.org/add-ons</div>
+              </div>
+              <div class="sa-history-add" style="background:#111111; border-color:#111111; color:#E8E8E5;"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg></div>
+            </div>
+            <div class="sa-history-item">
+              <div class="sa-history-icon"><svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M2 6.5h9M6.5 2a7 7 0 010 9M6.5 2a7 7 0 000 9"/></svg></div>
+              <div class="sa-history-body">
+                <div class="sa-history-name">Cloudflare Pages Functions</div>
+                <div class="sa-history-url">developers.cloudflare.com/pages</div>
+              </div>
+              <div class="sa-history-add"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     STATE: 最近历史不可用
+     ══════════════════════════════════════════ -->
+<div class="state-section" id="s-history-hidden">
+  <div class="state-label">最近历史不可用 &nbsp;·&nbsp; 无权限或无数据时不显示底部区域</div>
+  <div class="screen-wrap">
+    <div class="sa" style="min-height:520px;">
+      <div class="sa-grain" id="grain-history-hidden"></div>
+      <div class="sa-topbar">
+        <div class="sa-logo">Ar<em>Page</em></div>
+        <div class="sa-topbar-meta"><span class="sa-topbar-time">14:38:12</span></div>
+      </div>
+      <div class="sa-search-bar">
+        <div class="sa-search-wrap">
+          <div class="sa-search-icon"><svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7.5" cy="7.5" r="5"/><path d="M12 12l3.5 3.5"/></svg></div>
+          <input class="sa-search-input" placeholder="搜索书签，或按 Enter 跳转 Google…" readonly>
+          <div class="sa-search-hint"><span class="sa-kbd">/</span></div>
+        </div>
+      </div>
+      <div class="sa-content">
+        <div class="sa-group">
+          <div class="sa-group-header">
+            <div class="sa-group-toggle"><svg viewBox="0 0 10 10" fill="currentColor"><path d="M2 3l3 4 3-4z"/></svg></div>
+            <span class="sa-group-name">开发工具</span>
+            <div class="sa-group-meta"><span class="sa-group-count">3 个书签</span></div>
+          </div>
+          <div class="bm-grid">
+            <div class="sa-bm-card"><div class="fav fa-gh">GH</div><div><div class="sa-bm-title">GitHub</div><div class="sa-bm-domain">github.com</div></div></div>
+            <div class="sa-bm-card"><div class="fav fa-cf">CF</div><div><div class="sa-bm-title">Cloudflare</div><div class="sa-bm-domain">dash.cloudflare.com</div></div></div>
+            <div class="sa-bm-add">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 1v10M1 6h10"/></svg>
+              添加书签
+            </div>
+          </div>
+        </div>
         <div class="sa-add-group">
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M6 1v10M1 6h10"/></svg>
           新建分组
@@ -1481,7 +1659,7 @@ body { background: #111; font-family: sans-serif; }
 <script>
 // E-ink dithering texture: scattered dark microdots on cool gray ground
 (function() {
-  const ids = ['grain-login','grain-empty','grain-empty-newgroup','grain-main','grain-search','grain-hover','grain-add','grain-add2','grain-edit','grain-rename','grain-delete','grain-newgroup','grain-drag','grain-noresult','grain-nofavicon','grain-pomo-ctx'];
+  const ids = ['grain-login','grain-empty','grain-empty-newgroup','grain-main','grain-history','grain-history-hidden','grain-search','grain-hover','grain-add','grain-add2','grain-edit','grain-rename','grain-delete','grain-newgroup','grain-drag','grain-noresult','grain-nofavicon','grain-pomo-ctx'];
   const canvas = document.createElement('canvas');
   const size = 256; canvas.width = size; canvas.height = size;
   const ctx = canvas.getContext('2d');

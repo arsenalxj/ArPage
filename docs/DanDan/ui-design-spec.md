@@ -147,6 +147,7 @@ Base unit: **8px**
 | Kbd Hint | — | — | `background:#E2E2E2; border:1px solid #AAAAAA; border-radius:4px` |
 | Inline Input | Group Rename | Editing | 复用 `.sa-field-input` 样式，内联替换对应文字节点；新建分组不使用内联输入 |
 | Topbar Meta | IP Chip, Time | — | Topbar 中部，`ml-auto` 推至右侧。IP chip：`height 24px; padding 0 9px; border 1px solid #CCCCCC; border-radius 5px; background #E2E2E2`；IP 获取失败时不渲染。时间：`Space Mono 10px #777777`，始终显示，每秒刷新。 |
+| Recent History | History Strip, History Item | Hidden, Populated, Hover | 页面底部区域。仅在收到扩展历史数据且存在未添加 URL 时渲染；无权限、无数据、无未添加项时完全隐藏，不显示空态。 |
 | Delete Confirm | — | — | 弹窗内红色警示文字为深灰 `#444`，按钮仍为黑色 Primary |
 | Pomodoro Timer | Expanded, Collapsed | Idle, Running, Paused, Editing | 悬浮右下角 `fixed bottom:24 right:24 z-40`；展开宽 `220px`，level-3 阴影；收起为单行 `40px` 高 |
 
@@ -172,6 +173,8 @@ Base unit: **8px**
 │  ─── 分组名 ──────────────────   │
 │  [Card][Card][+Add]              │
 │  [+ 新建分组]                    │
+│  ─── 最近浏览 ────────────────── │  ← 有扩展历史数据时显示
+│  [History][History][History]      │
 └──────────────────────────────────┘
 ```
 
@@ -243,6 +246,7 @@ Base unit: **8px**
 | 弹窗关闭 | fade out + scale to 0.97 | 150ms | ease-in | |
 | 分组折叠 | 内容 height collapse | 200ms | ease-in-out | 折叠后 header 切虚线边框 |
 | 拖拽提起 | shadow 升至 level 4，卡片保持固定宽高 | 100ms | ease | 不旋转、不缩放，避免拖动时 UI 变形或位置偏移 |
+| 最近历史项 hover | dashed border → `#111`，背景 → `#F4F4F2`，shadow level 0→2 | 120ms | ease-in-out | 点击后打开新增书签弹窗并预填 URL/标题 |
 | 页面进入 | fade + slide up 12px | 300ms | ease-out | 首次加载 |
 | 番茄钟收起/展开 | height collapse/expand | 200ms | ease-in-out | 收起态保留时间和模式标签 |
 | 番茄钟暂停指示 | 时间数字 opacity 降至 0.5 | 即时 | — | 通过透明度区分 running 和 paused |
@@ -300,6 +304,14 @@ Base unit: **8px**
 **Pomodoro Timer — Collapsed:** `min-width 180px; height 40px; background #F4F4F2; border 1px solid #CCCCCC; border-radius 12px; box-shadow 3px 3px 0 #BBBBBB; padding 0 14px; inline-flex`
 - 内容: 图标 `14px` + 时间 `Space Mono 14px 700 #111` + 模式 `Lora 11px #777` + 展开按钮 `28×28px ml-auto`
 
+**Recent History:** 页面内容底部区域，位于「新建分组」入口之后。容器 `margin-top 34px; padding-top 18px; border-top 1px solid #BBBBBB`。
+- Header: 左侧为 `13px Playfair Display 600` 全大写标题，带 13px outline 历史图标；右侧为 `11px Lora italic #999999` 说明。
+- Item: `border 1px dashed #AAAAAA; border-radius 7px; background transparent; padding 11px 12px; min-width 252px; max-width 330px; flex:1`。
+- Hover: `border-color #111111; background #F4F4F2; box-shadow 2px 2px 0 #AAAAAA`；右侧加号按钮反转为黑底浅字。
+- Icon: 26×26px，`background #E2E2E2; border 1px solid #CCCCCC; border-radius 6px`，内部使用 13px outline 图标。
+- Text: 标题 `13px Lora 500 #111111` 单行省略；URL `11px Lora italic #777777` 单行省略。
+- Hidden: 扩展未传历史、浏览器历史权限不可用、历史为空、或所有 URL 已存在于书签中时，不渲染整个 Recent History 区域。
+
 ---
 
 ## Design Inference Principles
@@ -314,3 +326,4 @@ Base unit: **8px**
 6. **当新增交互元素（如标签、徽章）时，使用 `#E2E2E2` 背景 + `#555555` 文字 + `radius-sm 5px`**，与置顶区背景保持一致灰阶。
 7. **当 icon 单独出现（无文字标签）时，容器为 34×34px 圆角 7px，hover 浮出 `rgba(0,0,0,0.06)` 背景**，确保点击区足够大。
 8. **当文字需要特殊强调（如搜索高亮）时，使用 `rgba(0,0,0,0.1)` 底色 + `border-radius 2px`**，不用颜色。
+9. **当浏览器扩展能力不可用时，隐藏依赖扩展的 UI 区域**，不要显示错误、占位或权限说明，避免导航页变成扩展设置页。

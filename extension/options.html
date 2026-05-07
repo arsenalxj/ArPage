@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ArPage 设置</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #E8E8E5;
+        color: #111111;
+        font-family: Georgia, serif;
+      }
+      main {
+        max-width: 560px;
+        margin: 0 auto;
+        padding: 64px 24px;
+      }
+      .panel {
+        padding: 34px;
+        border: 1px solid #CCCCCC;
+        border-radius: 12px;
+        background: #F4F4F2;
+        box-shadow: 5px 5px 0 #BBBBBB;
+      }
+      h1 {
+        margin: 0 0 8px;
+        font-size: 28px;
+        line-height: 1.1;
+      }
+      p {
+        margin: 0 0 26px;
+        color: #777777;
+        font-size: 14px;
+        font-style: italic;
+        line-height: 1.6;
+      }
+      label {
+        display: block;
+        margin-bottom: 6px;
+        color: #555555;
+        font-size: 12px;
+        font-weight: 600;
+      }
+      input {
+        width: 100%;
+        height: 44px;
+        padding: 0 14px;
+        border: 1.5px solid #AAAAAA;
+        border-radius: 7px;
+        background: #F4F4F2;
+        color: #111111;
+        font: inherit;
+        outline: none;
+      }
+      input:focus {
+        border-color: #111111;
+        box-shadow: 2px 2px 0 #999999;
+      }
+      .actions {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 22px;
+      }
+      button {
+        height: 40px;
+        padding: 0 20px;
+        border: 0;
+        border-radius: 7px;
+        background: #111111;
+        color: #E8E8E5;
+        cursor: pointer;
+        font: inherit;
+      }
+      button:disabled {
+        background: #AAAAAA;
+        cursor: not-allowed;
+      }
+      .status {
+        min-height: 18px;
+        margin-top: 12px;
+        color: #777777;
+        font-size: 12px;
+        font-style: italic;
+      }
+      .status.error {
+        color: #444444;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <section class="panel">
+        <h1>ArPage</h1>
+        <p>填写你的在线 ArPage 地址。保存时浏览器会请求该域名权限，用来在导航页里显示最近浏览历史。</p>
+        <form id="options-form">
+          <label for="arpage-url">ArPage 地址</label>
+          <input id="arpage-url" name="arpage-url" type="url" placeholder="https://example.pages.dev/" autocomplete="url" required>
+          <div class="actions">
+            <button id="save-button" type="submit">保存</button>
+          </div>
+          <div id="status" class="status" role="status"></div>
+        </form>
+      </section>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

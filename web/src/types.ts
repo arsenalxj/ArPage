@@ -23,6 +23,12 @@ export interface AppData {
   bookmarks: Bookmark[]
 }
 
+export interface RecentHistoryItem {
+  title: string
+  url: string
+  lastVisitTime: number
+}
+
 export const EMPTY_DATA: AppData = {
   version: 0,
   updatedAt: 0,

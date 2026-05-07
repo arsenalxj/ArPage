@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   CollisionDetection, DndContext, DragEndEvent, DragOverlay, DragOverEvent, DragStartEvent,
   KeyboardSensor, PointerSensor, closestCenter, pointerWithin, rectIntersection, useSensor, useSensors,
@@ -7,12 +7,13 @@ import {
   SortableContext, arrayMove, rectSortingStrategy, sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import { AppData, Bookmark } from '../types'
+import { AppData, Bookmark, RecentHistoryItem } from '../types'
 import { groupBookmarks, pinnedBookmarks, sortedGroups } from '../hooks/useBookmarks'
 import { BookmarkCard, BookmarkCardWrapper } from './BookmarkCard'
 import { BookmarkGroup } from './BookmarkGroup'
 import { BookmarkModal } from './BookmarkModal'
 import { GroupModal } from './GroupModal'
+import { RecentHistory } from './RecentHistory'
 
 interface Props {
   data: AppData
@@ -33,6 +34,10 @@ interface ModalState {
   open: boolean
   bookmark: Bookmark | null
   defaultGroupId?: string
+  initialValues?: {
+    url?: string
+    title?: string
+  }
 }
 
 const pointerFirstCollisionDetection: CollisionDetection = (args) => {
@@ -55,6 +60,28 @@ export function BookmarkGrid({
   const overGroupId = useRef<string | null>(null)
   const [groupModalOpen, setGroupModalOpen] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+  const [recentHistory, setRecentHistory] = useState<RecentHistoryItem[]>([])
+
+  useEffect(() => {
+    function handleExtensionMessage(event: MessageEvent) {
+      if (event.source !== window) return
+      const payload = event.data
+      if (!payload || typeof payload !== 'object') return
+      if (payload.source !== 'arpage-extension') return
+      if (payload.type !== 'ARPAGE_RECENT_HISTORY' || !Array.isArray(payload.items)) return
+
+      const items = payload.items as unknown[]
+      setRecentHistory(
+        items
+          .map(toRecentHistoryItem)
+          .filter((item): item is RecentHistoryItem => item !== null)
+          .slice(0, 20),
+      )
+    }
+
+    window.addEventListener('message', handleExtensionMessage)
+    return () => window.removeEventListener('message', handleExtensionMessage)
+  }, [])
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -75,6 +102,18 @@ export function BookmarkGrid({
 
   function openAdd(defaultGroupId?: string) {
     setModal({ open: true, bookmark: null, defaultGroupId })
+  }
+
+  function openAddFromHistory(item: RecentHistoryItem) {
+    setModal({
+      open: true,
+      bookmark: null,
+      defaultGroupId: groups[0]?.id,
+      initialValues: {
+        url: item.url,
+        title: item.title.trim() || getHostname(item.url),
+      },
+    })
   }
 
   function openEdit(bm: Bookmark) {
@@ -263,6 +302,7 @@ export function BookmarkGrid({
 
   const groupIds = groups.map(g => `group:${g.id}`)
   const pinnedIds = pinned.map(b => `pinned:${b.id}`)
+  const visibleHistory = filterRecentHistory(recentHistory, data.bookmarks)
 
   return (
     <>
@@ -334,6 +374,8 @@ export function BookmarkGrid({
             <PlusIcon />
             新建分组
           </button>
+
+          <RecentHistory items={visibleHistory} onAdd={openAddFromHistory} />
         </div>
 
         {/* Drag overlay */}
@@ -371,6 +413,7 @@ export function BookmarkGrid({
         <BookmarkModal
           bookmark={modal.bookmark}
           defaultGroupId={modal.defaultGroupId}
+          initialValues={modal.initialValues}
           groups={data.groups}
           onSave={handleSave}
           onClose={() => setModal({ open: false, bookmark: null })}
@@ -385,6 +428,55 @@ export function BookmarkGrid({
       )}
     </>
   )
+}
+
+function toRecentHistoryItem(raw: unknown): RecentHistoryItem | null {
+  if (!raw || typeof raw !== 'object') return null
+  const item = raw as Partial<RecentHistoryItem>
+  if (typeof item.url !== 'string') return null
+  const url = normalizeUrlKey(item.url)
+  if (!url) return null
+  return {
+    url,
+    title: typeof item.title === 'string' ? item.title.slice(0, 160) : '',
+    lastVisitTime: typeof item.lastVisitTime === 'number' ? item.lastVisitTime : 0,
+  }
+}
+
+function filterRecentHistory(items: RecentHistoryItem[], bookmarks: Bookmark[]): RecentHistoryItem[] {
+  const bookmarkUrls = new Set(bookmarks.map(b => normalizeUrlKey(b.url)).filter(Boolean))
+  const seen = new Set<string>()
+  const result: RecentHistoryItem[] = []
+
+  for (const item of items) {
+    const key = normalizeUrlKey(item.url)
+    if (!key || seen.has(key) || bookmarkUrls.has(key)) continue
+    seen.add(key)
+    result.push({ ...item, url: key })
+    if (result.length >= 3) break
+  }
+
+  return result
+}
+
+function normalizeUrlKey(rawUrl: string): string | null {
+  try {
+    const url = new URL(rawUrl)
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') return null
+    url.hash = ''
+    if (url.pathname !== '/') url.pathname = url.pathname.replace(/\/+$/, '')
+    return url.href
+  } catch {
+    return null
+  }
+}
+
+function getHostname(rawUrl: string): string {
+  try {
+    return new URL(rawUrl).hostname
+  } catch {
+    return rawUrl
+  }
 }
 
 function PinIcon() {

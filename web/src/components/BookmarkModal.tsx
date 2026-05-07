@@ -4,14 +4,18 @@ import { Bookmark, Group } from '../types'
 interface Props {
   bookmark: Bookmark | null        // null = add new
   defaultGroupId?: string
+  initialValues?: {
+    url?: string
+    title?: string
+  }
   groups: Group[]
   onSave: (data: Omit<Bookmark, 'id' | 'order' | 'pinnedOrder' | 'createdAt'> & { id?: string }) => void
   onClose: () => void
 }
 
-export function BookmarkModal({ bookmark, defaultGroupId, groups, onSave, onClose }: Props) {
-  const [url, setUrl] = useState(bookmark?.url ?? '')
-  const [title, setTitle] = useState(bookmark?.title ?? '')
+export function BookmarkModal({ bookmark, defaultGroupId, initialValues, groups, onSave, onClose }: Props) {
+  const [url, setUrl] = useState(bookmark?.url ?? initialValues?.url ?? '')
+  const [title, setTitle] = useState(bookmark?.title ?? initialValues?.title ?? '')
   const [groupId, setGroupId] = useState(bookmark?.groupId ?? defaultGroupId ?? groups[0]?.id ?? '')
   const [favicon, setFavicon] = useState<string | null>(bookmark?.favicon ?? null)
   const [fetchingFavicon, setFetchingFavicon] = useState(false)
