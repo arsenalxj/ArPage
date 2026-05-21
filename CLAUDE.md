@@ -12,6 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - 顶部 IP 与时间方案：`docs/DanDan/plan_show_ip.md`
 - 番茄钟方案：`docs/DanDan/plan_pomodoro_timer.md`
 - 新标签页扩展方案：`docs/DanDan/plan_browser_extension_newtab_history.md`
+- 微博热搜方案：`docs/DanDan/plan_weibo_hot.md`
 - UI 规范：`docs/DanDan/ui-design-spec.md`
 - UI 效果图：`docs/DanDan/ui-preview.html`
 
@@ -24,7 +25,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │   ├── auth.ts             POST 登录 / DELETE 登出
 │   ├── bookmarks.ts        GET/PUT 全量书签数据
 │   ├── favicon.ts          GET favicon 代理抓取
-│   └── ip.ts               GET 访问者公网 IP
+│   ├── ip.ts               GET 访问者公网 IP
+│   └── weibo-hot.ts        GET 微博热搜代理
 ├── web/src/                React 前端
 │   ├── components/
 │   │   ├── LoginPage.tsx
@@ -34,7 +36,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │   │   ├── BookmarkCard.tsx   单个书签卡片
 │   │   ├── BookmarkModal.tsx  新增/编辑弹窗
 │   │   ├── PomodoroTimer.tsx  番茄钟计时器
-│   │   └── RecentHistory.tsx  最近浏览历史（扩展用）
+│   │   ├── WeiboHotDrawer.tsx 微博热搜左侧抽屉
+│   │   ├── RecentHistory.tsx  最近浏览历史（扩展用）
+│   │   └── icons/             共享图标组件
+│   ├── utils/                 共享工具函数
 │   ├── hooks/
 │   │   └── useBookmarks.ts    数据获取与乐观更新
 │   └── App.tsx
@@ -78,6 +83,7 @@ interface Bookmark {
 | PUT | /api/bookmarks | 带 version 的全量写入，版本冲突返回 409 |
 | GET | /api/favicon?url= | 服务端代理抓取 favicon |
 | GET | /api/ip | 返回访问者公网 IP（读 CF-Connecting-IP，回退 x-forwarded-for） |
+| GET | /api/weibo-hot | 代理微博热搜，Worker 侧 5 分钟缓存，?refresh=1 强制刷新 |
 
 - 写入前 Worker 必须校验：id 不重复、groupId 存在、url 为 http/https、title 非空且 ≤120 字
 - 并发写入保护：前端带 version，Worker 检查版本冲突返回 409，前端重新拉取后重试

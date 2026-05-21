@@ -5,5 +5,6 @@ web/dist/
 .wrangler/
 .dev.vars
 dist/
+!extension/dist/
 *.local
 *.tsbuildinfo

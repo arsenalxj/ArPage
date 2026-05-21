@@ -13,6 +13,7 @@
 - 网站图标：提供浏览器标签页、移动端主屏和高清 PNG 图标。
 - IP 与时间：页面顶部实时显示访问者公网 IP 和当前时间。
 - 番茄钟：内置番茄钟计时器，支持自定义时长、暂停/重置和通知提醒。
+- 微博热搜：搜索框旁入口点击后弹出左侧抽屉，展示实时微博热搜榜单，支持缓存和手动刷新。
 - 浏览器扩展：新标签页扩展，用 ArPage 替代默认新标签页并展示最近浏览历史，支持 Chrome 和 Firefox。
 
 ## 技术栈
@@ -138,6 +139,7 @@ npm run deploy
 - 顶部 IP 与时间方案：`docs/DanDan/plan_show_ip.md`
 - 番茄钟方案：`docs/DanDan/plan_pomodoro_timer.md`
 - 新标签页扩展方案：`docs/DanDan/plan_browser_extension_newtab_history.md`
+- 微博热搜方案：`docs/DanDan/plan_weibo_hot.md`
 - UI 预览：`docs/DanDan/ui-preview.html`
 
 ## 注意事项
